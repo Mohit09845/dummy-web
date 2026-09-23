@@ -13,14 +13,6 @@ export const metadata: Metadata = {
     'Mango Smoothie',
     'ITC Foods',
   ],
-  icons: {
-    icon: [
-      { url: '/assets/logos/df-logo.png', type: 'image/png' },
-      { url: '/favicon.png', type: 'image/png' },
-    ],
-    shortcut: '/assets/logos/df-logo.png',
-    apple: '/assets/logos/df-logo.png',
-  },
   openGraph: {
     title: 'Sunfeast Dark Fantasy Beverages',
     description: 'Where Every Sip Becomes an Indulgence — Belgian Chocolate Milkshakes & Fruit Smoothies',
@@ -38,8 +30,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" type="image/png" href="/assets/logos/df-logo.png" />
-        <link rel="apple-touch-icon" href="/assets/logos/df-logo.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
