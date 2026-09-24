@@ -301,177 +301,192 @@ export default function DrinkQuiz() {
 
   return (
     <section className="mb-14 sm:mb-16" aria-label="Drink finder quiz">
-      <div className="relative glass border border-[rgba(212,175,55,0.28)] rounded-3xl p-5 sm:p-9 bg-[#140A06]/90 shadow-[0_25px_60px_rgba(0,0,0,0.85)] overflow-hidden">
-        <div
-          aria-hidden
-          className="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] max-w-full h-[300px] rounded-full pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse at center, rgba(212,175,55,0.15) 0%, transparent 70%)',
-            filter: 'blur(50px)',
-          }}
-        />
+      <div className="grid lg:grid-cols-[300px_1fr] rounded-3xl overflow-hidden border border-[rgba(212,175,55,0.28)] shadow-[0_25px_60px_rgba(0,0,0,0.85)]">
+        {/* Lifestyle photo panel — extra flourish on larger screens where there's room to spare */}
+        <div className="relative hidden lg:block">
+          <Image
+            src="/assets/kvs/lifestyle-berry-chill.webp"
+            alt="A woman enjoying a Sunfeast Berry Smoothie at home"
+            fill
+            sizes="300px"
+            className="object-cover object-[68%_35%]"
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#140A06]" />
+        </div>
 
-        <div className="relative z-10">
-          <AnimatePresence mode="wait" initial={false}>
-            {!finished ? (
-              <motion.div key="quiz" exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                {/* ── Stepper ─────────────────────────────────────────── */}
-                <nav aria-label="Quiz progress" className="mb-8">
-                  <p className="text-[13px] text-[var(--gold-light)] mb-3 text-center sm:text-left">
-                    Find your perfect drink
-                  </p>
-                  <ol className="grid grid-cols-4 gap-2">
-                    {QUESTIONS.map((q, i) => {
-                      const done = answers[i] !== null && i !== step;
-                      const current = i === step;
-                      return (
-                        <li key={q.id} aria-current={current ? 'step' : undefined}>
-                          <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                            <motion.div
-                              className="h-full bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-light)]"
-                              initial={false}
-                              animate={{ width: done ? '100%' : current ? '40%' : '0%' }}
-                              transition={{ duration: reduceMotion ? 0 : 0.35, ease: 'easeOut' }}
-                            />
-                          </div>
-                          <span
-                            className={`mt-2 block text-[11px] sm:text-xs transition-colors ${current
-                                ? 'text-[#FAF3E0] font-semibold'
-                                : done
-                                  ? 'text-[var(--gold-light)]'
-                                  : 'text-[#9C8E7A]'
-                              }`}
-                          >
-                            <span className="sr-only">Step {i + 1} of {TOTAL}: </span>
-                            {q.step}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </nav>
+        <div className="relative bg-[#140A06] p-5 sm:p-9 overflow-hidden">
+          <div
+            aria-hidden
+            className="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] max-w-full h-[300px] rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(ellipse at center, rgba(212,175,55,0.15) 0%, transparent 70%)',
+              filter: 'blur(50px)',
+            }}
+          />
 
-                {/* ── Question ────────────────────────────────────────── */}
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={step}
-                    {...slide}
-                    transition={{ duration: reduceMotion ? 0.15 : 0.28, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <div className="text-center max-w-xl mx-auto mb-7">
-                      <h3
-                        ref={headingRef}
-                        tabIndex={-1}
-                        id={`q-${question.id}`}
-                        className="font-display text-2xl sm:text-[2rem] font-bold text-[#FAF3E0] leading-tight outline-none"
-                      >
-                        {question.question}
-                      </h3>
-                      <p className="text-sm text-[#CBB89D] mt-2">{question.subtitle}</p>
-                    </div>
-
-                    <div
-                      role="radiogroup"
-                      aria-labelledby={`q-${question.id}`}
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl mx-auto"
-                    >
-                      {question.options.map((option, idx) => {
-                        const Icon = option.icon;
-                        const selected = pendingId
-                          ? pendingId === option.id
-                          : answers[step]?.id === option.id;
-                        const dimmed = pendingId !== null && !selected;
-
+          <div className="relative z-10">
+            <AnimatePresence mode="wait" initial={false}>
+              {!finished ? (
+                <motion.div key="quiz" exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                  {/* ── Stepper ─────────────────────────────────────────── */}
+                  <nav aria-label="Quiz progress" className="mb-8">
+                    <p className="text-[13px] text-[var(--gold-light)] mb-3 text-center sm:text-left">
+                      Find your perfect drink
+                    </p>
+                    <ol className="grid grid-cols-4 gap-2">
+                      {QUESTIONS.map((q, i) => {
+                        const done = answers[i] !== null && i !== step;
+                        const current = i === step;
                         return (
-                          <button
-                            key={option.id}
-                            type="button"
-                            role="radio"
-                            aria-checked={selected}
-                            onClick={() => select(option)}
-                            style={{ ['--accent' as string]: option.accent }}
-                            className={`group relative flex items-center gap-4 p-4 sm:p-5 rounded-2xl text-left cursor-pointer border transition-[border-color,background-color,opacity,box-shadow] duration-200
-                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#140A06]
-                              ${selected
-                                ? 'border-[var(--gold)] bg-[rgba(212,175,55,0.12)] shadow-[0_0_0_1px_var(--gold),0_12px_30px_-12px_var(--accent)]'
-                                : 'border-[rgba(212,175,55,0.2)] bg-white/[0.02] hover:border-[color:var(--accent)] hover:bg-white/[0.04] hover:shadow-[0_12px_30px_-14px_var(--accent)]'
-                              }
-                              ${dimmed ? 'opacity-40' : 'opacity-100'}`}
-                          >
+                          <li key={q.id} aria-current={current ? 'step' : undefined}>
+                            <div className="h-1 rounded-full bg-white/10 overflow-hidden">
+                              <motion.div
+                                className="h-full bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-light)]"
+                                initial={false}
+                                animate={{ width: done ? '100%' : current ? '40%' : '0%' }}
+                                transition={{ duration: reduceMotion ? 0 : 0.35, ease: 'easeOut' }}
+                              />
+                            </div>
                             <span
-                              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                              style={{
-                                background: `color-mix(in srgb, ${option.accent} 14%, transparent)`,
-                                color: option.accent,
-                              }}
+                              className={`mt-2 block text-[11px] sm:text-xs transition-colors ${current
+                                  ? 'text-[#FAF3E0] font-semibold'
+                                  : done
+                                    ? 'text-[var(--gold-light)]'
+                                    : 'text-[#9C8E7A]'
+                                }`}
                             >
-                              <Icon size={24} strokeWidth={1.6} aria-hidden />
+                              <span className="sr-only">Step {i + 1} of {TOTAL}: </span>
+                              {q.step}
                             </span>
-
-                            <span className="min-w-0 flex-1">
-                              <span className="block text-[15px] font-semibold text-[#FAF3E0]">
-                                {option.label}
-                              </span>
-                              <span className="block text-[13px] text-[#B8AD9E] mt-0.5 leading-snug">
-                                {option.sublabel}
-                              </span>
-                            </span>
-
-                            {selected ? (
-                              <motion.span
-                                initial={reduceMotion ? false : { scale: 0.4, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                className="w-6 h-6 rounded-full bg-[var(--gold)] text-[#120701] flex items-center justify-center shrink-0"
-                              >
-                                <Check size={14} strokeWidth={3} aria-hidden />
-                              </motion.span>
-                            ) : (
-                              <kbd
-                                aria-hidden
-                                className="hidden sm:flex w-6 h-6 rounded-md border border-white/10 text-[11px] text-[#9C8E7A] items-center justify-center shrink-0 font-sans"
-                              >
-                                {idx + 1}
-                              </kbd>
-                            )}
-                          </button>
+                          </li>
                         );
                       })}
-                    </div>
+                    </ol>
+                  </nav>
 
-                    <div className="flex justify-center min-h-[40px] pt-4">
-                      {step > 0 && (
-                        <button
-                          type="button"
-                          onClick={goBack}
-                          className="inline-flex items-center gap-1.5 text-[13px] text-[#B8AD9E] hover:text-[#FAF3E0] transition-colors cursor-pointer py-1.5 px-3 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]"
+                  {/* ── Question ────────────────────────────────────────── */}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={step}
+                      {...slide}
+                      transition={{ duration: reduceMotion ? 0.15 : 0.28, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <div className="text-center max-w-xl mx-auto mb-7">
+                        <h3
+                          ref={headingRef}
+                          tabIndex={-1}
+                          id={`q-${question.id}`}
+                          className="font-display text-2xl sm:text-[2rem] font-bold text-[#FAF3E0] leading-tight outline-none"
                         >
-                          <ChevronLeft size={15} aria-hidden />
-                          Back to {QUESTIONS[step - 1].step.toLowerCase()}
-                        </button>
-                      )}
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </motion.div>
-            ) : (
-              result && (
-                <motion.div
-                  key="result"
-                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <ResultView
-                    entry={result}
-                    runnerUp={runnerUp}
-                    answers={answers}
-                    headingRef={headingRef}
-                    onRetake={retake}
-                  />
+                          {question.question}
+                        </h3>
+                        <p className="text-sm text-[#CBB89D] mt-2">{question.subtitle}</p>
+                      </div>
+
+                      <div
+                        role="radiogroup"
+                        aria-labelledby={`q-${question.id}`}
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl mx-auto"
+                      >
+                        {question.options.map((option, idx) => {
+                          const Icon = option.icon;
+                          const selected = pendingId
+                            ? pendingId === option.id
+                            : answers[step]?.id === option.id;
+                          const dimmed = pendingId !== null && !selected;
+
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              role="radio"
+                              aria-checked={selected}
+                              onClick={() => select(option)}
+                              style={{ ['--accent' as string]: option.accent }}
+                              className={`group relative flex items-center gap-4 p-4 sm:p-5 rounded-2xl text-left cursor-pointer border transition-[border-color,background-color,opacity,box-shadow] duration-200
+                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#140A06]
+                                ${selected
+                                  ? 'border-[var(--gold)] bg-[rgba(212,175,55,0.12)] shadow-[0_0_0_1px_var(--gold),0_12px_30px_-12px_var(--accent)]'
+                                  : 'border-[rgba(212,175,55,0.2)] bg-white/[0.02] hover:border-[color:var(--accent)] hover:bg-white/[0.04] hover:shadow-[0_12px_30px_-14px_var(--accent)]'
+                                }
+                                ${dimmed ? 'opacity-40' : 'opacity-100'}`}
+                            >
+                              <span
+                                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                                style={{
+                                  background: `color-mix(in srgb, ${option.accent} 14%, transparent)`,
+                                  color: option.accent,
+                                }}
+                              >
+                                <Icon size={24} strokeWidth={1.6} aria-hidden />
+                              </span>
+
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-[15px] font-semibold text-[#FAF3E0]">
+                                  {option.label}
+                                </span>
+                                <span className="block text-[13px] text-[#B8AD9E] mt-0.5 leading-snug">
+                                  {option.sublabel}
+                                </span>
+                              </span>
+
+                              {selected ? (
+                                <motion.span
+                                  initial={reduceMotion ? false : { scale: 0.4, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  className="w-6 h-6 rounded-full bg-[var(--gold)] text-[#120701] flex items-center justify-center shrink-0"
+                                >
+                                  <Check size={14} strokeWidth={3} aria-hidden />
+                                </motion.span>
+                              ) : (
+                                <kbd
+                                  aria-hidden
+                                  className="hidden sm:flex w-6 h-6 rounded-md border border-white/10 text-[11px] text-[#9C8E7A] items-center justify-center shrink-0 font-sans"
+                                >
+                                  {idx + 1}
+                                </kbd>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex justify-center min-h-[40px] pt-4">
+                        {step > 0 && (
+                          <button
+                            type="button"
+                            onClick={goBack}
+                            className="inline-flex items-center gap-1.5 text-[13px] text-[#B8AD9E] hover:text-[#FAF3E0] transition-colors cursor-pointer py-1.5 px-3 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]"
+                          >
+                            <ChevronLeft size={15} aria-hidden />
+                            Back to {QUESTIONS[step - 1].step.toLowerCase()}
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
                 </motion.div>
-              )
-            )}
-          </AnimatePresence>
+              ) : (
+                result && (
+                  <motion.div
+                    key="result"
+                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <ResultView
+                      entry={result}
+                      runnerUp={runnerUp}
+                      answers={answers}
+                      headingRef={headingRef}
+                      onRetake={retake}
+                    />
+                  </motion.div>
+                )
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </section>
@@ -527,7 +542,6 @@ function ResultView({
               fill
               sizes="(max-width: 1024px) 60vw, 320px"
               className="object-contain object-bottom drop-shadow-[0_20px_35px_rgba(0,0,0,0.9)]"
-              priority
               unoptimized
             />
           </div>

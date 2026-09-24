@@ -29,7 +29,6 @@ export interface Product {
   bgGradient: string;        // product page hero gradient
   packshot: string;          // /assets/packshots/...
   backshotImage: string;     // back-of-pack
-  heroKV?: string;           // lifestyle KV if available
   ingredients: string[];
   nutrition: NutritionItem[];
   variants: ProductVariant[];
@@ -56,9 +55,8 @@ export const PRODUCTS: Product[] = [
     accentColor: '#C8842A',
     accentLight: '#F5C87D',
     bgGradient: 'from-[#1A0A03] via-[#3D1A06] to-[#1A0A03]',
-    packshot: '/assets/packshots/chocolate-milkshake/fop.png',
-    backshotImage: '/assets/packshots/chocolate-milkshake/bop1.png',
-    heroKV: '/assets/kvs/hero-milkshake.jpg',
+    packshot: '/assets/packshots/chocolate-milkshake/fop.webp',
+    backshotImage: '/assets/packshots/chocolate-milkshake/bop1.webp',
     ingredients: [
       'Standardised Milk (85%)',
       'Sugar',
@@ -84,8 +82,8 @@ export const PRODUCTS: Product[] = [
         name: 'Belgian Chocolate Milkshake',
         shortName: 'Chocolate',
         color: '#7B3F00',
-        image: '/assets/packshots/chocolate-milkshake/fop.png',
-        backImage: '/assets/packshots/chocolate-milkshake/bop1.png',
+        image: '/assets/packshots/chocolate-milkshake/fop.webp',
+        backImage: '/assets/packshots/chocolate-milkshake/bop1.webp',
         tagline: 'Rich Belgian Cocoa Solids',
       },
       {
@@ -93,8 +91,8 @@ export const PRODUCTS: Product[] = [
         name: 'White Chocolate Vanilla Milkshake',
         shortName: 'Vanilla',
         color: '#D4B896',
-        image: '/assets/packshots/vanilla-milkshake/fop.png',
-        backImage: '/assets/packshots/vanilla-milkshake/bop1.png',
+        image: '/assets/packshots/vanilla-milkshake/fop.webp',
+        backImage: '/assets/packshots/vanilla-milkshake/bop1.webp',
         tagline: 'Ivory Vanilla Bean Essence',
       },
     ],
@@ -124,9 +122,8 @@ export const PRODUCTS: Product[] = [
     accentColor: '#D97706',
     accentLight: '#FCD34D',
     bgGradient: 'from-[#100800] via-[#3B1F00] to-[#100800]',
-    packshot: '/assets/packshots/mango-smoothie/render.png',
-    backshotImage: '/assets/packshots/mango-smoothie/bop.png',
-    heroKV: '/assets/kvs/lifestyle-chunky.jpg',
+    packshot: '/assets/packshots/mango-smoothie/render.webp',
+    backshotImage: '/assets/packshots/mango-smoothie/bop.webp',
     ingredients: [
       'Standardised Milk (65%)',
       'Fruit Pieces — Alphonso Mango, Mixed Berry, or Oats & Dates (25%)',
@@ -151,8 +148,8 @@ export const PRODUCTS: Product[] = [
         name: 'Alphonso Mango Smoothie',
         shortName: 'Alphonso Mango',
         color: '#EAB308',
-        image: '/assets/packshots/mango-smoothie/render.png',
-        backImage: '/assets/packshots/mango-smoothie/bop.png',
+        image: '/assets/packshots/mango-smoothie/render.webp',
+        backImage: '/assets/packshots/mango-smoothie/bop.webp',
         tagline: '25% Ratnagiri Alphonso Pieces',
       },
       {
@@ -160,8 +157,8 @@ export const PRODUCTS: Product[] = [
         name: 'Berry & Mango Smoothie',
         shortName: 'Berry & Mango',
         color: '#E11D48',
-        image: '/assets/packshots/berry-mango-smoothie/render.png',
-        backImage: '/assets/packshots/berry-mango-smoothie/bop.png',
+        image: '/assets/packshots/berry-mango-smoothie/render.webp',
+        backImage: '/assets/packshots/berry-mango-smoothie/bop.webp',
         tagline: 'Tangy Wild Berries & Alphonso',
       },
       {
@@ -169,8 +166,8 @@ export const PRODUCTS: Product[] = [
         name: 'Breakfast Smoothie',
         shortName: 'Breakfast Smoothie',
         color: '#10B981',
-        image: '/assets/packshots/breakfast-smoothie/fop.png',
-        backImage: '/assets/packshots/breakfast-smoothie/bop.png',
+        image: '/assets/packshots/breakfast-smoothie/fop.webp',
+        backImage: '/assets/packshots/breakfast-smoothie/bop.webp',
         tagline: 'Wholesome Oats & Chia Seeds',
       },
     ],
@@ -200,8 +197,8 @@ export const PRODUCTS: Product[] = [
     accentColor: '#B45309',
     accentLight: '#FDE68A',
     bgGradient: 'from-[#0D0800] via-[#2C1800] to-[#0D0800]',
-    packshot: '/assets/packshots/badam-milk/fop.png',
-    backshotImage: '/assets/packshots/badam-milk/bop.png',
+    packshot: '/assets/packshots/badam-milk/fop.webp',
+    backshotImage: '/assets/packshots/badam-milk/bop.webp',
     ingredients: [
       'Standardised Milk (88%)',
       'Sugar',
@@ -247,9 +244,8 @@ export const PRODUCTS: Product[] = [
     accentColor: '#7C3AED',
     accentLight: '#C4B5FD',
     bgGradient: 'from-[#07030E] via-[#170929] to-[#07030E]',
-    packshot: '/assets/packshots/lassi/fop.png',
-    backshotImage: '/assets/packshots/lassi/bop.png',
-    heroKV: '/assets/kvs/hero-lassi.png',
+    packshot: '/assets/packshots/lassi/fop.webp',
+    backshotImage: '/assets/packshots/lassi/bop.webp',
     ingredients: [
       'Full-fat Curd (95%)',
       'Sugar',

@@ -3,12 +3,14 @@
 import { useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PRODUCTS, Product, ProductVariant } from '@/data/products';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import DrinkQuiz from '@/components/DrinkQuiz';
+
+const DrinkQuiz = dynamic(() => import('@/components/DrinkQuiz'));
 
 const CATEGORY_PLURAL_NAMES: Record<string, string> = {
   Milkshake: 'Milkshakes',

@@ -46,7 +46,7 @@ export default function Footer() {
           <div className="sm:col-span-1 space-y-4">
             <Link href="/" className="relative w-44 h-11 block cursor-pointer">
               <Image
-                src="/assets/logos/df-logo.png"
+                src="/assets/logos/df-logo.webp"
                 alt="Sunfeast Dark Fantasy Logo"
                 fill
                 className="object-contain object-left filter brightness-[2.3] contrast-[1.1] drop-shadow-[0_1px_8px_rgba(212,175,55,0.4)]"

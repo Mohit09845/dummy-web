@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 export default function Hero() {
   const bgRef = useRef<HTMLDivElement>(null);
-  const [heroSrc, setHeroSrc] = useState<string>('/assets/kvs/sunfeast-bf-smoothie-hero.jpg');
+  const [heroSrc, setHeroSrc] = useState<string>('/assets/kvs/sunfeast-bf-smoothie-hero.webp');
   const [imgError, setImgError] = useState<boolean>(false);
 
   // Subtle parallax on scroll
@@ -27,10 +27,10 @@ export default function Hero() {
   };
 
   const handleImageError = () => {
-    if (heroSrc === '/assets/kvs/sunfeast-bf-smoothie-hero.jpg') {
-      setHeroSrc('/assets/kvs/Sunfeast BF Smoothie A+ Content-01.jpg');
-    } else if (heroSrc === '/assets/kvs/Sunfeast BF Smoothie A+ Content-01.jpg') {
-      setHeroSrc('/assets/kvs/Picture1.png');
+    if (heroSrc === '/assets/kvs/sunfeast-bf-smoothie-hero.webp') {
+      setHeroSrc('/assets/kvs/Sunfeast BF Smoothie A+ Content-01.webp');
+    } else if (heroSrc === '/assets/kvs/Sunfeast BF Smoothie A+ Content-01.webp') {
+      setHeroSrc('/assets/kvs/Picture1.webp');
     } else {
       setImgError(true);
     }
@@ -66,6 +66,7 @@ export default function Hero() {
             fill
             priority
             unoptimized
+            sizes="100vw"
             onError={handleImageError}
             className="object-cover object-center"
           />

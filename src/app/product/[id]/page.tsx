@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { PRODUCTS, getProductById } from '@/data/products';
 import ProductPageClient from '@/components/ProductPageClient';
+import { SITE_URL } from '@/lib/site';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -18,6 +19,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${product.name} | Dark Fantasy Beverages`,
     description: product.longDescription,
+    alternates: {
+      canonical: `/product/${product.id}`,
+    },
+    openGraph: {
+      title: `${product.name} | Dark Fantasy Beverages`,
+      description: product.description,
+      url: `/product/${product.id}`,
+      images: [{ url: product.packshot }],
+    },
   };
 }
 
@@ -26,5 +36,29 @@ export default async function ProductPage({ params }: PageProps) {
   const product = getProductById(id);
   if (!product) notFound();
 
-  return <ProductPageClient product={product} />;
+  // Only fields with real, visible-on-page values — no price/availability
+  // is shown anywhere on the site, so `offers` is intentionally omitted
+  // rather than filled with placeholder data.
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.longDescription,
+    image: `${SITE_URL}${product.packshot}`,
+    brand: {
+      '@type': 'Brand',
+      name: product.brand,
+    },
+    category: product.category,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <ProductPageClient product={product} />
+    </>
+  );
 }

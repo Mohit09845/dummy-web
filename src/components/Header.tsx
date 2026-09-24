@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 // Header hides while the user is actively scrolling down, and reappears
 // either when they scroll up or when scrolling comes to a stop.
@@ -50,7 +51,7 @@ export default function Header() {
       {/* ── Top-Left: Dark Fantasy Brand Logo (Clean, No Border) ── */}
       <Link href="/" className="relative w-36 sm:w-44 h-10 sm:h-11 block cursor-pointer">
         <Image
-          src="/assets/logos/df-logo.png"
+          src="/assets/logos/df-logo.webp"
           alt="Sunfeast Dark Fantasy"
           fill
           className="object-contain object-left filter brightness-[2.3] contrast-[1.1] drop-shadow-[0_1px_8px_rgba(212,175,55,0.4)]"
@@ -66,6 +67,7 @@ export default function Header() {
           className="btn-gold px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
         >
           <span>Explore Products</span>
+          <ArrowRight size={14} className="text-[#120701]" />
         </Link>
       </div>
     </header>

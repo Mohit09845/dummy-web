@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag,
@@ -12,9 +13,12 @@ import {
   Activity,
 } from 'lucide-react';
 import { Product } from '@/data/products';
-import BuyNowModal from '@/components/BuyNowModal';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+
+// Never present on initial paint (only mounts after a click) and has no
+// SEO value, so it's excluded from the route's initial JS entirely.
+const BuyNowModal = dynamic(() => import('@/components/BuyNowModal'), { ssr: false });
 
 interface ProductPageClientProps {
   product: Product;
@@ -258,6 +262,19 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
                 transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                 className="space-y-6"
               >
+                {/* Aashirvaad carries its own brand mark alongside Sunfeast/Dark Fantasy */}
+                {product.brand === 'Aashirvaad' && (
+                  <div className="relative w-32 h-11">
+                    <Image
+                      src="/assets/logos/aashirvaad-logo.webp"
+                      alt="Aashirvaad"
+                      fill
+                      className="object-contain object-left"
+                      unoptimized
+                    />
+                  </div>
+                )}
+
                 {/* Brand & Category badges */}
                 <div className="flex items-center gap-2 flex-wrap">
                   <span

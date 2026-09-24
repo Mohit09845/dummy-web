@@ -73,7 +73,7 @@ export default function BuyNowModal({ onClose, productName, platforms }: BuyNowM
               className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FFCE00] flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-transform duration-200 cursor-pointer p-2 shrink-0 border border-black/10"
             >
               <Image
-                src="/assets/logos/blinkit.png"
+                src="/assets/logos/blinkit.webp"
                 alt="Blinkit"
                 width={42}
                 height={42}
