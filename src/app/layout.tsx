@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'Sunfeast Dark Fantasy Beverages | Where Every Sip Becomes an Indulgence',
   description:
-    'Indulge in the luxurious range of Sunfeast Dark Fantasy milkshakes, smoothies, badam milk, and lassi — crafted with authentic Belgian cocoa, pure dairy, and real fruits.',
+    'Indulge in the luxurious range of Dark Fantasy milkshakes, Sunfeast smoothies, Aashirvaad badam milk, and lassi — crafted with authentic Belgian cocoa, pure dairy, and real fruits.',
   keywords: [
     'Sunfeast Dark Fantasy',
     'Dark Fantasy Beverages',

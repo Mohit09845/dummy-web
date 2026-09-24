@@ -185,14 +185,14 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'badam-milk',
-    name: 'Sunfeast Shahi Badam Milk',
+    name: 'Aashirvaad Shahi Badam Milk',
     shortName: 'Badam Milk',
-    brand: 'Sunfeast',
+    brand: 'Aashirvaad',
     category: 'Flavoured Milk',
     tagline: 'Royal nourishment. Ancient wisdom. Modern sip.',
     description: 'Creamy almond-infused milk with saffron and cardamom — a regal treat.',
     longDescription:
-      'Inspired by royal Indian kitchens, Sunfeast Shahi Badam Milk blends wholesome dairy with real California almond slivers, warming cardamom, and a hint of precious saffron. Each sip is a nourishing ritual — 5.2g of natural protein, rich calcium, and a flavour profile worthy of royalty.',
+      'Inspired by royal Indian kitchens, Aashirvaad Shahi Badam Milk blends wholesome dairy with real California almond slivers, warming cardamom, and a hint of precious saffron. Each sip is a nourishing ritual — 5.2g of natural protein, rich calcium, and a flavour profile worthy of royalty.',
     volume: '160 ml',
     accentColor: '#B45309',
     accentLight: '#FDE68A',

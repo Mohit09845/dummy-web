@@ -33,6 +33,14 @@ interface GalleryImage {
   color: string;
 }
 
+// The packshot files referenced by product data are sized for the small
+// card contexts (ProductCard, ProductsListingClient, DrinkQuiz) where most
+// of them are used. This carousel is the one place that shows them much
+// larger, so it asks for the "-detail" variant generated alongside each one.
+function toDetail(src: string): string {
+  return src.replace(/\.webp$/, '-detail.webp');
+}
+
 export default function ProductPageClient({ product }: ProductPageClientProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -47,7 +55,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
             name: v.name,
             shortName: v.shortName,
             label: 'Front Pack',
-            image: v.image,
+            image: toDetail(v.image),
             color: v.color,
           });
         }
@@ -57,7 +65,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
             name: v.name,
             shortName: v.shortName,
             label: 'Back of Pack',
-            image: v.backImage,
+            image: toDetail(v.backImage),
             color: v.color,
           });
         }
@@ -69,7 +77,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
           name: product.shortName,
           shortName: product.shortName,
           label: 'Front Pack',
-          image: product.packshot,
+          image: toDetail(product.packshot),
           color: product.accentColor,
         });
       }
@@ -79,7 +87,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
           name: product.shortName,
           shortName: product.shortName,
           label: 'Back of Pack',
-          image: product.backshotImage,
+          image: toDetail(product.backshotImage),
           color: product.accentColor,
         });
       }

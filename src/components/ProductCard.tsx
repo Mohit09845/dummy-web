@@ -116,9 +116,10 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             <div className="pt-1">
               <Link
                 href={`/product/${product.id}`}
+                aria-label={`View details for ${product.name}`}
                 className="group/btn btn-gold w-full py-2.5 px-4 rounded-xl text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:scale-102 active:scale-98 transition-all duration-200"
               >
-                <span>View Details</span>
+                <span aria-hidden="true">View Details</span>
                 <ArrowRight
                   size={14}
                   className="text-[#120701] transition-transform duration-200 ease-out group-hover/btn:translate-x-1 will-change-transform"
