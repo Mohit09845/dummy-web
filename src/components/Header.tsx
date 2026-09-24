@@ -55,7 +55,8 @@ export default function Header() {
           alt="Sunfeast Dark Fantasy"
           fill
           className="object-contain object-left filter brightness-[2.3] contrast-[1.1] drop-shadow-[0_1px_8px_rgba(212,175,55,0.4)]"
-          priority
+          loading="eager"
+          preload={false}
           unoptimized
         />
       </Link>

@@ -14,6 +14,11 @@ const playfairDisplay = Playfair_Display({
   style: ['normal', 'italic'],
   variable: '--font-playfair',
   display: 'swap',
+  // Heading-only display font, not needed for the hero's LCP image paint.
+  // Preloading it (~85KB across normal+italic) competed with the hero
+  // image for early bandwidth for no LCP benefit; display:swap already
+  // keeps the fallback-to-webfont swap invisible-cheap.
+  preload: false,
 });
 
 export const metadata: Metadata = {

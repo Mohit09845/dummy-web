@@ -78,12 +78,12 @@ export default function Footer() {
 
           {/* Quick links */}
           <div>
-            <h5
+            <h3
               className="text-xs font-bold uppercase tracking-widest mb-5"
               style={{ color: 'var(--gold)' }}
             >
               Explore
-            </h5>
+            </h3>
             <ul className="space-y-3">
               {QUICK_LINKS.map((l) => (
                 <li key={l.label}>
@@ -103,12 +103,12 @@ export default function Footer() {
 
           {/* Contact Us / Email Section */}
           <div className="space-y-4">
-            <h5
+            <h3
               className="text-xs font-bold uppercase tracking-widest"
               style={{ color: 'var(--gold)' }}
             >
               Contact Us
-            </h5>
+            </h3>
             <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               Have questions, feedback, or business inquiries? Drop us an email anytime.
             </p>

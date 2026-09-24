@@ -236,9 +236,9 @@ export default function FAQ() {
               <HelpCircle size={24} />
             </div>
             <div>
-              <h4 className="font-display font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="font-display font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
                 Have more questions?
-              </h4>
+              </h3>
               <p className="text-xs sm:text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
                 Reach out to our consumer care desk or write directly to ITC Foods.
               </p>
