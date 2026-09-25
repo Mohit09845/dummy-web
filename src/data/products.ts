@@ -100,7 +100,7 @@ export const PRODUCTS: Product[] = [
       'Two indulgent flavours: Belgian Chocolate & White Chocolate Vanilla',
       'No chemical preservatives',
       'Flash UHT sterilised for maximum freshness',
-      '160 ml — perfectly portioned single serve',
+      '160 ml, perfectly portioned single serve',
     ],
     platforms: {
       blinkit: 'https://blinkit.com/',
@@ -115,9 +115,9 @@ export const PRODUCTS: Product[] = [
     brand: 'Sunfeast',
     category: 'Smoothie',
     tagline: 'Real fruit chunks. Thick, chunky, and endlessly craveable.',
-    description: 'Thick and chunky smoothie bursting with real fruit pieces and creamy milk — in Alphonso Mango, Berry & Mango, or Breakfast Oats.',
+    description: 'Thick and chunky smoothie bursting with real fruit pieces and creamy milk, in Alphonso Mango, Berry & Mango, or Breakfast Oats.',
     longDescription:
-      'Capture the taste of peak Indian summer, all year round. Sunfeast Smoothie packs real fruit pieces into a thick, creamy dairy blend — sun-ripened Ratnagiri Alphonso mango, a tangy berry-mango mix, or a wholesome Breakfast Smoothie with oats, dates, and chia seeds. No concentrates. No artificial colours. Just real fruit, sip after sip.',
+      'Capture the taste of peak Indian summer, all year round. Sunfeast Smoothie packs real fruit pieces into a thick, creamy dairy blend: sun-ripened Ratnagiri Alphonso mango, a tangy berry-mango mix, or a wholesome Breakfast Smoothie with oats, dates, and chia seeds. No concentrates. No artificial colours. Just real fruit, sip after sip.',
     volume: '160 ml',
     accentColor: '#D97706',
     accentLight: '#FCD34D',
@@ -126,7 +126,7 @@ export const PRODUCTS: Product[] = [
     backshotImage: '/assets/packshots/mango-smoothie/bop.webp',
     ingredients: [
       'Standardised Milk (65%)',
-      'Fruit Pieces — Alphonso Mango, Mixed Berry, or Oats & Dates (25%)',
+      'Fruit Pieces: Alphonso Mango, Mixed Berry, or Oats & Dates (25%)',
       'Sugar',
       'Fruit Pulp (10%)',
       'Acidity Regulator (INS 330)',
@@ -190,9 +190,9 @@ export const PRODUCTS: Product[] = [
     brand: 'Aashirvaad',
     category: 'Flavoured Milk',
     tagline: 'Royal nourishment. Ancient wisdom. Modern sip.',
-    description: 'Creamy almond-infused milk with saffron and cardamom — a regal treat.',
+    description: 'Creamy almond-infused milk with saffron and cardamom, a regal treat.',
     longDescription:
-      'Inspired by royal Indian kitchens, Aashirvaad Shahi Badam Milk blends wholesome dairy with real California almond slivers, warming cardamom, and a hint of precious saffron. Each sip is a nourishing ritual — 5.2g of natural protein, rich calcium, and a flavour profile worthy of royalty.',
+      'Inspired by royal Indian kitchens, Aashirvaad Shahi Badam Milk blends wholesome dairy with real California almond slivers, warming cardamom, and a hint of precious saffron. Each sip is a nourishing ritual with 5.2g of natural protein, rich calcium, and a flavour profile worthy of royalty.',
     volume: '160 ml',
     accentColor: '#B45309',
     accentLight: '#FDE68A',

@@ -393,7 +393,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
                 Ingredients &amp; <span className="text-gold-gradient italic">Nutrition</span>
               </h2>
               <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-2">
-                Complete transparency in every sip — authentic ingredients and verified nutritional profile.
+                Complete transparency in every sip, authentic ingredients and verified nutritional profile.
               </p>
             </div>
 

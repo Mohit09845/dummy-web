@@ -23,7 +23,7 @@ export default function LifestyleBanner() {
             Good Company, <span className="text-gold-gradient italic">Great Taste</span>
           </h2>
           <p className="mt-2.5 text-sm sm:text-base leading-relaxed max-w-lg" style={{ color: 'var(--text-secondary)' }}>
-            From quick catch-ups to long afternoons with friends, our beverages are the easy pick — ready to sip,
+            From quick catch-ups to long afternoons with friends, our beverages are the easy pick: ready to sip,
             endlessly craveable, and always worth sharing.
           </p>
         </div>

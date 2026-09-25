@@ -7,7 +7,7 @@ import FAQ from '@/components/FAQ';
 import Footer from '@/components/Footer';
 
 // Below-the-fold and interaction-heavy (framer-motion, ~20 lucide icons,
-// quiz scoring logic) — code-split out of the initial route chunk. Still
+// quiz scoring logic), code-split out of the initial route chunk. Still
 // server-rendered (ssr defaults to true) so the first question stays in
 // the static HTML for crawlers/GEO.
 const DrinkQuiz = dynamic(() => import('@/components/DrinkQuiz'));

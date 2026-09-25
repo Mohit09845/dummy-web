@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────────────────
-   DESIGN TOKENS — PURE DARK FANTASY LUXURY THEME
+   DESIGN TOKENS: PURE DARK FANTASY LUXURY THEME
    ───────────────────────────────────────────────────────── */
 :root {
   --bg:             #090503;
@@ -40,7 +40,7 @@ html {
 body {
   background-color: var(--bg);
   color: var(--text-primary);
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-ubuntu), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -65,7 +65,7 @@ label[for] {
    TYPOGRAPHY
    ───────────────────────────────────────────────────────── */
 .font-display {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-ubuntu), system-ui, -apple-system, sans-serif;
 }
 
 /* ─────────────────────────────────────────────────────────

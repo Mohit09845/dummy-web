@@ -33,7 +33,7 @@ import { PRODUCTS, Product, ProductVariant } from '@/data/products';
 
 // ── Flavour entries ─────────────────────────────────────────────────────────
 // Each product is either a single flavour (badam milk, lassi) or a set of
-// variants (milkshake, smoothie) — the quiz recommends one specific flavour,
+// variants (milkshake, smoothie). The quiz recommends one specific flavour,
 // so it scores/ranks over the flattened list rather than raw products.
 interface FlavourEntry {
   key: string;
@@ -302,7 +302,7 @@ export default function DrinkQuiz() {
   return (
     <section className="mb-14 sm:mb-16" aria-label="Drink finder quiz">
       <div className="grid lg:grid-cols-[300px_1fr] rounded-3xl overflow-hidden border border-[rgba(212,175,55,0.28)] shadow-[0_25px_60px_rgba(0,0,0,0.85)]">
-        {/* Lifestyle photo panel — extra flourish on larger screens where there's room to spare */}
+        {/* Lifestyle photo panel: extra flourish on larger screens where there's room to spare */}
         <div className="relative hidden lg:block">
           <Image
             src="/assets/kvs/lifestyle-berry-chill.webp"

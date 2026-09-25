@@ -36,7 +36,7 @@ export default async function ProductPage({ params }: PageProps) {
   const product = getProductById(id);
   if (!product) notFound();
 
-  // Only fields with real, visible-on-page values — no price/availability
+  // Only fields with real, visible-on-page values. No price/availability
   // is shown anywhere on the site, so `offers` is intentionally omitted
   // rather than filled with placeholder data.
   const productJsonLd = {

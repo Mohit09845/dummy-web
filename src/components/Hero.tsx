@@ -89,7 +89,7 @@ export default function Hero() {
 
       {/* ── Hero Content (Compact single-view layout) ── */}
       <div className="relative z-10 text-center px-5 sm:px-8 max-w-4xl mx-auto pt-20 sm:pt-24 pb-12 flex flex-col items-center justify-center">
-        {/* Main headline — staggered with drop shadow */}
+        {/* Main headline, staggered with drop shadow */}
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-1 sm:space-y-1.5 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
           <motion.h1
             variants={fadeUp}

@@ -1,31 +1,21 @@
 import type { Metadata } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Ubuntu } from 'next/font/google';
 import './globals.css';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
-const inter = Inter({
+const ubuntu = Ubuntu({
   subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const playfairDisplay = Playfair_Display({
-  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
   style: ['normal', 'italic'],
-  variable: '--font-playfair',
+  variable: '--font-ubuntu',
   display: 'swap',
-  // Heading-only display font, not needed for the hero's LCP image paint.
-  // Preloading it (~85KB across normal+italic) competed with the hero
-  // image for early bandwidth for no LCP benefit; display:swap already
-  // keeps the fallback-to-webfont swap invisible-cheap.
-  preload: false,
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'Sunfeast Dark Fantasy Beverages | Where Every Sip Becomes an Indulgence',
   description:
-    'Indulge in the luxurious range of Dark Fantasy milkshakes, Sunfeast smoothies, Aashirvaad badam milk, and lassi — crafted with authentic Belgian cocoa, pure dairy, and real fruits.',
+    'Indulge in the luxurious range of Dark Fantasy milkshakes, Sunfeast smoothies, Aashirvaad badam milk, and lassi, crafted with authentic Belgian cocoa, pure dairy, and real fruits.',
   keywords: [
     'Sunfeast Dark Fantasy',
     'Dark Fantasy Beverages',
@@ -43,7 +33,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Sunfeast Dark Fantasy Beverages',
-    description: 'Where Every Sip Becomes an Indulgence — Belgian Chocolate Milkshakes & Fruit Smoothies',
+    description: 'Where Every Sip Becomes an Indulgence: Belgian Chocolate Milkshakes & Fruit Smoothies',
     url: SITE_URL,
     siteName: SITE_NAME,
     type: 'website',
@@ -53,7 +43,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Sunfeast Dark Fantasy Beverages',
-    description: 'Where Every Sip Becomes an Indulgence — Belgian Chocolate Milkshakes & Fruit Smoothies',
+    description: 'Where Every Sip Becomes an Indulgence: Belgian Chocolate Milkshakes & Fruit Smoothies',
     images: ['/og-image.jpg'],
   },
 };
@@ -80,7 +70,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfairDisplay.variable}`}>
+    <html lang="en" className={ubuntu.variable}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script
