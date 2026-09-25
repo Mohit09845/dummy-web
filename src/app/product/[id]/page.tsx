@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { PRODUCTS, getProductById } from '@/data/products';
 import ProductPageClient from '@/components/ProductPageClient';
 import { SITE_URL } from '@/lib/site';
+import { getProductFaqs } from '@/lib/productFaq';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -52,11 +53,28 @@ export default async function ProductPage({ params }: PageProps) {
     category: product.category,
   };
 
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: getProductFaqs(product).map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <ProductPageClient product={product} />
     </>

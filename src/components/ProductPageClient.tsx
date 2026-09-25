@@ -11,10 +11,12 @@ import {
   CheckCircle2,
   Layers,
   Activity,
+  Plus,
 } from 'lucide-react';
 import { Product, ProductVariant } from '@/data/products';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { getProductFaqs } from '@/lib/productFaq';
 
 // Never present on initial paint (only mounts after a click) and has no
 // SEO value, so it's excluded from the route's initial JS entirely.
@@ -44,6 +46,8 @@ function toDetail(src: string): string {
 export default function ProductPageClient({ product }: ProductPageClientProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const hasVariants = Boolean(product.variants && product.variants.length > 1);
+  const productFaqs = useMemo(() => getProductFaqs(product), [product]);
+  const [openFaqId, setOpenFaqId] = useState<string | null>(productFaqs[0]?.id ?? null);
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     product.variants && product.variants.length > 0 ? product.variants[0] : null
@@ -507,6 +511,79 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Product FAQ Section ───────────────────────────────────────── */}
+        <section className="py-16 sm:py-20 border-t border-[var(--border)]">
+          <div className="max-w-3xl mx-auto px-5 sm:px-10 lg:px-16">
+            <div className="text-center mb-10">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-pill mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--gold-light)]">
+                <span>Got Questions?</span>
+              </span>
+              <h2 className="font-display text-3xl sm:text-4xl font-bold text-[#FAF3E0]">
+                {product.shortName} <span className="text-gold-gradient italic">FAQs</span>
+              </h2>
+            </div>
+
+            <div className="space-y-3">
+              {productFaqs.map((faq) => {
+                const isOpen = openFaqId === faq.id;
+                return (
+                  <div
+                    key={faq.id}
+                    className="rounded-2xl transition-colors duration-300 overflow-hidden"
+                    style={{
+                      background: isOpen ? 'var(--bg-card-hover)' : 'var(--bg-card)',
+                      border: isOpen ? '1px solid var(--border-strong)' : '1px solid var(--border)',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaqId((prev) => (prev === faq.id ? null : faq.id))}
+                      aria-expanded={isOpen}
+                      className="w-full text-left px-5 py-4 sm:py-5 flex items-center justify-between gap-4 transition-colors group cursor-pointer"
+                    >
+                      <span
+                        className={`text-sm sm:text-base font-semibold leading-snug transition-colors ${
+                          isOpen ? 'text-[var(--gold-light)]' : 'text-[#FAF3E0] group-hover:text-[var(--gold-light)]'
+                        }`}
+                      >
+                        {faq.question}
+                      </span>
+                      <span
+                        className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300"
+                        style={{
+                          background: isOpen ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.08)',
+                          color: isOpen ? 'var(--gold-light)' : 'var(--gold)',
+                          border: '1px solid var(--border)',
+                          transform: isOpen ? 'rotate(135deg)' : 'rotate(0deg)',
+                        }}
+                      >
+                        <Plus size={14} />
+                      </span>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          key="content"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                          style={{ overflow: 'hidden' }}
+                        >
+                          <p className="px-5 pb-5 pt-3 text-sm leading-relaxed border-t border-[rgba(212,175,55,0.08)]" style={{ color: 'var(--text-secondary)' }}>
+                            {faq.answer}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
