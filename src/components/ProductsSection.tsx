@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useState, useRef } from 'react';
+import { useLayoutEffect, useState, useRef, useCallback, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { PRODUCTS } from '@/data/products';
 import ProductCard from './ProductCard';
@@ -8,12 +8,31 @@ import ProductCard from './ProductCard';
 export default function ProductsSection() {
   const railRef = useRef<HTMLDivElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Recompute which arrows make sense to show: neither if everything
+  // already fits on screen, and each side hides once scrolled to its end.
+  const updateScrollState = useCallback(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const maxScroll = rail.scrollWidth - rail.clientWidth;
+    setCanScrollLeft(rail.scrollLeft > 4);
+    setCanScrollRight(rail.scrollLeft < maxScroll - 4);
+  }, []);
 
   // Reset scroll position before paint so the scroll-snap rail doesn't
   // auto-realign to a centered card when the filtered list changes.
   useLayoutEffect(() => {
     if (railRef.current) railRef.current.scrollLeft = 0;
-  }, [selectedCategory]);
+    updateScrollState();
+  }, [selectedCategory, updateScrollState]);
+
+  useEffect(() => {
+    updateScrollState();
+    window.addEventListener('resize', updateScrollState);
+    return () => window.removeEventListener('resize', updateScrollState);
+  }, [updateScrollState]);
 
   const categories = [
     { label: 'All Beverages', value: 'all' },
@@ -93,28 +112,33 @@ export default function ProductsSection() {
         {/* ── Product Displaying Row with Left & Right Arrow Buttons on Sides ── */}
         <div className="relative max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 group/row">
           {/* Left Arrow Button */}
-          <button
-            type="button"
-            onClick={() => scroll('left')}
-            aria-label="Scroll products left"
-            className="absolute left-2 sm:left-4 lg:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center glass border border-[var(--border)] hover:border-[var(--gold)] hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-[0_4px_25px_rgba(0,0,0,0.9)] backdrop-blur-md text-[var(--gold-light)] bg-[#140A06]/90"
-          >
-            <ChevronLeft size={20} />
-          </button>
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => scroll('left')}
+              aria-label="Scroll products left"
+              className="absolute left-2 sm:left-4 lg:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center glass border border-[var(--border)] hover:border-[var(--gold)] hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-[0_4px_25px_rgba(0,0,0,0.9)] backdrop-blur-md text-[var(--gold-light)] bg-[#140A06]/90"
+            >
+              <ChevronLeft size={20} />
+            </button>
+          )}
 
           {/* Right Arrow Button */}
-          <button
-            type="button"
-            onClick={() => scroll('right')}
-            aria-label="Scroll products right"
-            className="absolute right-2 sm:right-4 lg:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center glass border border-[var(--border)] hover:border-[var(--gold)] hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-[0_4px_25px_rgba(0,0,0,0.9)] backdrop-blur-md text-[var(--gold-light)] bg-[#140A06]/90"
-          >
-            <ChevronRight size={20} />
-          </button>
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={() => scroll('right')}
+              aria-label="Scroll products right"
+              className="absolute right-2 sm:right-4 lg:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center glass border border-[var(--border)] hover:border-[var(--gold)] hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-[0_4px_25px_rgba(0,0,0,0.9)] backdrop-blur-md text-[var(--gold-light)] bg-[#140A06]/90"
+            >
+              <ChevronRight size={20} />
+            </button>
+          )}
 
           {/* Horizontal Scroll Rail */}
           <div
             ref={railRef}
+            onScroll={updateScrollState}
             className="scroll-rail flex items-stretch gap-6 px-10 sm:px-16 pb-8 overflow-x-auto"
             style={{ overflowAnchor: 'none' }}
           >
@@ -129,12 +153,14 @@ export default function ProductsSection() {
         </div>
 
         {/* ── Mobile swipe indicator ──────────────────── */}
-        <p
-          className="sm:hidden text-center text-xs mt-2 tracking-widest uppercase font-semibold"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          Swipe sideways or tap arrows to explore →
-        </p>
+        {(canScrollLeft || canScrollRight) && (
+          <p
+            className="sm:hidden text-center text-xs mt-2 tracking-widest uppercase font-semibold"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Swipe sideways or tap arrows to explore →
+          </p>
+        )}
       </div>
     </section>
   );

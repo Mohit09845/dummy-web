@@ -50,6 +50,7 @@ export default function Footer() {
                 alt="Sunfeast Dark Fantasy Logo"
                 fill
                 className="object-contain object-left filter brightness-[2.3] contrast-[1.1] drop-shadow-[0_1px_8px_rgba(212,175,55,0.4)]"
+                loading="eager"
                 unoptimized
               />
             </Link>

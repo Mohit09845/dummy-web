@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -64,6 +64,8 @@ const sectionRevealVariants: Variants = {
 export default function ProductsListingClient() {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Derive categories dynamically from product data
   const categoryList = Array.from(new Set(PRODUCTS.map((p) => p.category)));
@@ -74,6 +76,35 @@ export default function ProductsListingClient() {
     activeCategory === 'All'
       ? PRODUCTS
       : PRODUCTS.filter((p) => p.category === activeCategory);
+
+  // Recompute which arrows make sense to show: neither if everything already
+  // fits on screen (e.g. a single-product category), and each side hides
+  // once scrolled to its end.
+  const updateScrollState = useCallback(() => {
+    const rail = scrollContainerRef.current;
+    if (!rail) return;
+    const maxScroll = rail.scrollWidth - rail.clientWidth;
+    setCanScrollLeft(rail.scrollLeft > 4);
+    setCanScrollRight(rail.scrollLeft < maxScroll - 4);
+  }, []);
+
+  // AnimatePresence (mode="wait") remounts the rail as a fresh DOM node on
+  // every category switch, so a callback ref (fired exactly at that mount)
+  // is used instead of an effect keyed on activeCategory, which could run
+  // before the animated remount actually happens.
+  const setRailRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      scrollContainerRef.current = node;
+      if (node) requestAnimationFrame(updateScrollState);
+    },
+    [updateScrollState]
+  );
+
+  useEffect(() => {
+    updateScrollState();
+    window.addEventListener('resize', updateScrollState);
+    return () => window.removeEventListener('resize', updateScrollState);
+  }, [updateScrollState]);
 
   // Smooth scroll handler for the single row rail
   const scrollSingleRow = (direction: 'left' | 'right') => {
@@ -194,29 +225,36 @@ export default function ProductsListingClient() {
                   </div>
 
                   {/* Left / Right Chevron Navigation for Single Row */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => scrollSingleRow('left')}
-                      aria-label="Scroll products row left"
-                      className="w-9 h-9 rounded-full glass border border-[var(--border)] hover:border-[var(--gold)] flex items-center justify-center text-[var(--gold-light)] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => scrollSingleRow('right')}
-                      aria-label="Scroll products row right"
-                      className="w-9 h-9 rounded-full glass border border-[var(--border)] hover:border-[var(--gold)] flex items-center justify-center text-[var(--gold-light)] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
+                  {(canScrollLeft || canScrollRight) && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      {canScrollLeft && (
+                        <button
+                          type="button"
+                          onClick={() => scrollSingleRow('left')}
+                          aria-label="Scroll products row left"
+                          className="w-9 h-9 rounded-full glass border border-[var(--border)] hover:border-[var(--gold)] flex items-center justify-center text-[var(--gold-light)] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
+                        >
+                          <ChevronLeft size={16} />
+                        </button>
+                      )}
+                      {canScrollRight && (
+                        <button
+                          type="button"
+                          onClick={() => scrollSingleRow('right')}
+                          aria-label="Scroll products row right"
+                          className="w-9 h-9 rounded-full glass border border-[var(--border)] hover:border-[var(--gold)] flex items-center justify-center text-[var(--gold-light)] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
+                        >
+                          <ChevronRight size={16} />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Strictly Single Row with Horizontal Scroll Rail ── */}
                 <motion.div
-                  ref={scrollContainerRef}
+                  ref={setRailRef}
+                  onScroll={updateScrollState}
                   variants={gridContainerVariants}
                   initial="hidden"
                   animate="visible"

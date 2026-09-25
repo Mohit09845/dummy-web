@@ -12,7 +12,7 @@ import {
   Layers,
   Activity,
 } from 'lucide-react';
-import { Product } from '@/data/products';
+import { Product, ProductVariant } from '@/data/products';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -43,33 +43,52 @@ function toDetail(src: string): string {
 
 export default function ProductPageClient({ product }: ProductPageClientProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const hasVariants = Boolean(product.variants && product.variants.length > 1);
 
-  // Compile all available product & variant images (front and back packshots)
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
+    product.variants && product.variants.length > 0 ? product.variants[0] : null
+  );
+
+  // Open on the variant the visitor was previewing (e.g. hovered on the
+  // listing page) instead of always defaulting to the first flavour.
+  // Deferred to an effect (not a lazy useState initializer) because this
+  // route is statically exported: the prerendered HTML can't know about
+  // `?variant=`, so reading it during render would mismatch on hydration.
+  useEffect(() => {
+    const variantId = new URLSearchParams(window.location.search).get('variant');
+    if (!variantId || !product.variants) return;
+    const variant = product.variants.find((v) => v.id === variantId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing initial UI state from the URL once on mount, not reacting to external changes
+    if (variant) setSelectedVariant(variant);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
+
+  // Compile only the currently displayed variant's own images (front and
+  // back packshots), not every flavour's, so the carousel never shows a
+  // pack the visitor isn't looking at.
   const galleryImages = useMemo<GalleryImage[]>(() => {
     const images: GalleryImage[] = [];
-    if (product.variants && product.variants.length > 0) {
-      product.variants.forEach((v) => {
-        if (v.image) {
-          images.push({
-            id: `${v.id}-front`,
-            name: v.name,
-            shortName: v.shortName,
-            label: 'Front Pack',
-            image: toDetail(v.image),
-            color: v.color,
-          });
-        }
-        if (v.backImage) {
-          images.push({
-            id: `${v.id}-back`,
-            name: v.name,
-            shortName: v.shortName,
-            label: 'Back of Pack',
-            image: toDetail(v.backImage),
-            color: v.color,
-          });
-        }
-      });
+    if (selectedVariant) {
+      if (selectedVariant.image) {
+        images.push({
+          id: `${selectedVariant.id}-front`,
+          name: selectedVariant.name,
+          shortName: selectedVariant.shortName,
+          label: 'Front Pack',
+          image: toDetail(selectedVariant.image),
+          color: selectedVariant.color,
+        });
+      }
+      if (selectedVariant.backImage) {
+        images.push({
+          id: `${selectedVariant.id}-back`,
+          name: selectedVariant.name,
+          shortName: selectedVariant.shortName,
+          label: 'Back of Pack',
+          image: toDetail(selectedVariant.backImage),
+          color: selectedVariant.color,
+        });
+      }
     } else {
       if (product.packshot) {
         images.push({
@@ -93,23 +112,19 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
       }
     }
     return images;
-  }, [product]);
+  }, [product, selectedVariant]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  // Open on the variant the visitor was previewing (e.g. hovered on the
-  // listing page) instead of always defaulting to the first flavour.
-  // Deferred to an effect (not a lazy useState initializer) because this
-  // route is statically exported: the prerendered HTML can't know about
-  // `?variant=`, so reading it during render would mismatch on hydration.
-  useEffect(() => {
-    const variantId = new URLSearchParams(window.location.search).get('variant');
-    if (!variantId) return;
-    const idx = galleryImages.findIndex((img) => img.id === `${variantId}-front`);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing initial UI state from the URL once on mount, not reacting to external changes
-    if (idx >= 0) setActiveImageIndex(idx);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product.id]);
+  // Reset to the front pack whenever the visitor switches flavour. Adjusted
+  // during render (React's recommended pattern) rather than in an effect,
+  // since it's deriving state from a prop-like change, not syncing with an
+  // external system.
+  const [lastVariantId, setLastVariantId] = useState(selectedVariant?.id);
+  if (selectedVariant?.id !== lastVariantId) {
+    setLastVariantId(selectedVariant?.id);
+    setActiveImageIndex(0);
+  }
 
   const prevImage = () => {
     setActiveImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
@@ -120,7 +135,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
   };
 
   const currentItem = galleryImages[activeImageIndex] || galleryImages[0];
-  const activeColor = currentItem?.color || product.accentColor;
+  const activeColor = currentItem?.color || selectedVariant?.color || product.accentColor;
 
   return (
     <>
@@ -306,12 +321,44 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
                 {/* Main Product Title & Tagline */}
                 <div>
                   <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight text-[#FAF3E0]">
-                    {product.name}
+                    {selectedVariant ? selectedVariant.name : product.name}
                   </h1>
                   <p className="mt-2.5 text-lg sm:text-xl font-medium italic text-[var(--gold-light)]">
-                    &ldquo;{product.tagline}&rdquo;
+                    &ldquo;{selectedVariant?.tagline || product.tagline}&rdquo;
                   </p>
                 </div>
+
+                {/* Flavour Switcher (only for multi-variant products) */}
+                {hasVariants && product.variants && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {product.variants.map((v) => {
+                      const isSelected = selectedVariant?.id === v.id;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setSelectedVariant(v)}
+                          aria-pressed={isSelected}
+                          aria-label={`View ${v.name}`}
+                          className={`flex items-center gap-2 pl-2 pr-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
+                            isSelected
+                              ? 'border-[var(--gold)] bg-[rgba(212,175,55,0.12)] text-[var(--gold-light)]'
+                              : 'border-[var(--border)] text-[#CBB89D] hover:border-[var(--border-strong)]'
+                          }`}
+                        >
+                          <span
+                            className="block w-3 h-3 rounded-full shrink-0"
+                            style={{
+                              background: v.color,
+                              boxShadow: isSelected ? `0 0 8px ${v.color}` : 'none',
+                            }}
+                          />
+                          {v.shortName}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Pack Specifications Block (No Price) */}
                 <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl glass border border-[var(--border)] bg-[#140A06]/80">
