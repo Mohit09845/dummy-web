@@ -89,6 +89,9 @@ function getStores(platforms: Product['platforms']): Store[] {
 
 const subscribe = () => () => {};
 
+// How long the "Redirecting..." view stays up before the store tab opens.
+const REDIRECT_DELAY_MS = 1300;
+
 interface BuyNowModalProps {
   open: boolean;
   onClose: () => void;
@@ -97,11 +100,24 @@ interface BuyNowModalProps {
 }
 
 export default function BuyNowModal({ open, onClose, productName, platforms }: BuyNowModalProps) {
+  const stores = getStores(platforms);
   const mounted = useSyncExternalStore(subscribe, () => true, () => false);
   const closeRef = useRef<HTMLButtonElement>(null);
   // Stay mounted after `open` flips false until the exit animation ends.
   const [rendered, setRendered] = useState(open);
   if (open && !rendered) setRendered(true);
+
+  const [redirectingStore, setRedirectingStore] = useState<Store | null>(null);
+  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const goToStore = (store: Store) => {
+    if (redirectingStore) return; // ignore double clicks mid-redirect
+    setRedirectingStore(store);
+    redirectTimer.current = setTimeout(() => {
+      window.open(store.href, '_blank', 'noopener,noreferrer');
+      onClose();
+    }, REDIRECT_DELAY_MS);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -121,6 +137,18 @@ export default function BuyNowModal({ open, onClose, productName, platforms }: B
     };
   }, [open, onClose]);
 
+  // Closing mid-redirect (Escape, backdrop, X) cancels the pending tab open.
+  // The view itself resets in onAnimationEnd below, once `rendered` unmounts
+  // the panel — not here, to avoid a setState-in-effect cascade.
+  useEffect(() => {
+    if (open || !redirectTimer.current) return;
+    clearTimeout(redirectTimer.current);
+  }, [open]);
+
+  useEffect(() => () => {
+    if (redirectTimer.current) clearTimeout(redirectTimer.current);
+  }, []);
+
   if (!mounted || !rendered) return null;
   const state = open ? 'open' : 'closed';
 
@@ -130,7 +158,10 @@ export default function BuyNowModal({ open, onClose, productName, platforms }: B
       className="modal-backdrop fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6"
       onClick={onClose}
       onAnimationEnd={(e) => {
-        if (!open && e.target === e.currentTarget) setRendered(false);
+        if (!open && e.target === e.currentTarget) {
+          setRendered(false);
+          setRedirectingStore(null);
+        }
       }}
     >
       <div
@@ -139,7 +170,7 @@ export default function BuyNowModal({ open, onClose, productName, platforms }: B
         aria-labelledby="buy-modal-title"
         data-state={state}
         onClick={(e) => e.stopPropagation()}
-        className="modal-panel relative w-full sm:max-w-[520px] rounded-t-2xl sm:rounded-2xl p-6 sm:p-9 shadow-[0_30px_80px_-20px_rgba(9,5,3,0.6)]"
+        className="modal-panel relative w-full sm:max-w-[520px] rounded-t-2xl sm:rounded-2xl p-6 sm:p-9 shadow-[0_30px_80px_-20px_rgba(9,5,3,0.6)] overflow-hidden"
         style={{ background: 'var(--bg-light)', color: 'var(--text-on-light)' }}
       >
         <button
@@ -147,45 +178,82 @@ export default function BuyNowModal({ open, onClose, productName, platforms }: B
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-[rgba(29,15,9,0.08)]"
+          className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-[rgba(29,15,9,0.08)]"
         >
           <X size={20} />
         </button>
 
-        <p className="text-[12px] font-semibold tracking-[0.2em] uppercase" style={{ color: 'var(--accent-on-light)' }}>
-          Buy now
-        </p>
-        <h2 id="buy-modal-title" className="mt-2 pr-10 text-2xl sm:text-[28px] leading-tight font-medium">
-          {productName}
-        </h2>
-        <p className="mt-2 text-[15px]" style={{ color: 'var(--text-on-light-muted)' }}>
-          Choose your preferred store. Opens in a new tab.
-        </p>
-
-        <ul className="mt-7 grid grid-cols-3 sm:grid-cols-4 gap-x-3 gap-y-5">
-          {getStores(platforms).map((store, i) => (
-            <li key={store.name} className="panel-in" style={{ animationDelay: `${80 + i * 40}ms` }}>
-              <a
-                href={store.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-2 text-center"
+        {redirectingStore ? (
+          <div key="redirecting" className="image-swap flex flex-col items-center text-center py-10 sm:py-14">
+            <div className="relative w-24 h-24 sm:w-28 sm:h-28">
+              <span
+                className="absolute inset-0 rounded-full animate-spin"
+                style={{
+                  border: '3px solid rgba(29,15,9,0.12)',
+                  borderTopColor: 'var(--accent-on-light)',
+                }}
+                aria-hidden
+              />
+              <span
+                className="absolute inset-[10px] rounded-full flex items-center justify-center animate-pulse"
+                style={{ background: redirectingStore.bg }}
               >
-                <span
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border border-[rgba(29,15,9,0.1)] shadow-[0_6px_16px_-8px_rgba(29,15,9,0.4)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-1 group-hover:scale-105"
-                  style={{ background: store.bg }}
-                >
-                  {store.icon}
-                </span>
-                <span className="text-[13px] font-medium leading-tight">{store.name}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
+                {redirectingStore.icon}
+              </span>
+            </div>
 
-        <p className="mt-7 pt-5 border-t text-[13px] text-center" style={{ borderColor: 'var(--border-on-light)', color: 'var(--text-on-light-muted)' }}>
-          Also available at select supermarkets near you.
-        </p>
+            <p className="mt-7 text-lg font-medium" style={{ color: 'var(--text-on-light)' }}>
+              Redirecting to {redirectingStore.name}…
+            </p>
+            <p className="mt-1.5 text-[14px]" style={{ color: 'var(--text-on-light-muted)' }}>
+              Opening in a new tab
+            </p>
+          </div>
+        ) : (
+          <div key="stores" className="image-swap">
+            <p className="text-[12px] font-semibold tracking-[0.2em] uppercase" style={{ color: 'var(--accent-on-light)' }}>
+              Buy now
+            </p>
+            <h2 id="buy-modal-title" className="mt-2 pr-10 text-2xl sm:text-[28px] leading-tight font-medium">
+              {productName}
+            </h2>
+            <p className="mt-2 text-[15px]" style={{ color: 'var(--text-on-light-muted)' }}>
+              Choose your preferred store.
+            </p>
+
+            {/* Two explicit flex rows (4 then 3, bottom row centered) rather
+                than flex-wrap: wrap's break point depends on container width,
+                which can't guarantee the same 4-then-3 split at every
+                viewport size the way two fixed rows can. */}
+            <div className="mt-7 flex flex-col gap-y-5">
+              {[stores.slice(0, 4), stores.slice(4, 7)].map((row, rowIndex) => (
+                <ul key={rowIndex} className="flex justify-center gap-x-4 sm:gap-x-5">
+                  {row.map((store, i) => (
+                    <li key={store.name} className="w-14 sm:w-16 panel-in" style={{ animationDelay: `${80 + (rowIndex * 4 + i) * 40}ms` }}>
+                      <button
+                        type="button"
+                        onClick={() => goToStore(store)}
+                        className="group flex flex-col items-center gap-2 text-center w-full cursor-pointer"
+                      >
+                        <span
+                          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border border-[rgba(29,15,9,0.1)] shadow-[0_6px_16px_-8px_rgba(29,15,9,0.4)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-1 group-hover:scale-105"
+                          style={{ background: store.bg }}
+                        >
+                          {store.icon}
+                        </span>
+                        <span className="text-[13px] font-medium leading-tight">{store.name}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+
+            <p className="mt-7 pt-5 border-t text-[13px] text-center" style={{ borderColor: 'var(--border-on-light)', color: 'var(--text-on-light-muted)' }}>
+              Also available at select supermarkets near you.
+            </p>
+          </div>
+        )}
       </div>
     </div>,
     document.body,
