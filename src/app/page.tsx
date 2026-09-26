@@ -1,15 +1,26 @@
+import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import ProductsSection from '@/components/ProductsSection';
-import LifestyleBanner from '@/components/LifestyleBanner';
+import DidYouKnowSection from '@/components/DidYouKnowSection';
+import ExploreRange from '@/components/ExploreRange';
 import FAQ from '@/components/FAQ';
 import Footer from '@/components/Footer';
 
-// Below-the-fold and interaction-heavy (framer-motion, ~20 lucide icons,
-// quiz scoring logic), code-split out of the initial route chunk. Still
-// server-rendered (ssr defaults to true) so the first question stays in
-// the static HTML for crawlers/GEO.
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+  openGraph: {
+    url: '/',
+    title: 'Sunfeast Dark Fantasy Beverages | Where Every Sip Becomes an Indulgence',
+    description:
+      'Belgian chocolate milkshakes, real-fruit smoothies, badam milk and lassi from Dark Fantasy, Sunfeast and Aashirvaad.',
+  },
+};
+
+// Interaction-heavy (quiz scoring, ~20 icons), code-split out of the initial
+// route chunk. Still server-rendered (ssr defaults to true) so the first
+// question stays in the static HTML for crawlers.
 const DrinkQuiz = dynamic(() => import('@/components/DrinkQuiz'));
 
 export default function HomePage() {
@@ -17,25 +28,13 @@ export default function HomePage() {
     <>
       <Header />
       <main>
-        {/* 1. Hero banner (with working image) */}
         <Hero />
-
-        {/* 2. Featured products */}
         <ProductsSection />
-
-        {/* 3. Lifestyle moment */}
-        <LifestyleBanner />
-
-        {/* 4. Find your perfect drink quiz */}
-        <section className="px-5 sm:px-10 lg:px-16 max-w-7xl mx-auto">
-          <DrinkQuiz />
-        </section>
-
-        {/* 5. FAQ */}
+        <DidYouKnowSection />
+        <DrinkQuiz />
+        <ExploreRange />
         <FAQ />
       </main>
-
-      {/* 6. Footer */}
       <Footer />
     </>
   );

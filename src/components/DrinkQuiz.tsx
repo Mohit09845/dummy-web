@@ -3,15 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import {
   Check,
   CheckCircle2,
-  Lightbulb,
   ArrowRight,
   RotateCcw,
-  ChevronLeft,
   Sun,
   Snowflake,
   CloudRain,
@@ -30,6 +27,7 @@ import {
   Milk,
 } from 'lucide-react';
 import { PRODUCTS, Product, ProductVariant } from '@/data/products';
+import Reveal from '@/components/Reveal';
 
 // ── Flavour entries ─────────────────────────────────────────────────────────
 // Each product is either a single flavour (badam milk, lassi) or a set of
@@ -215,8 +213,13 @@ function rankProducts(answers: (QuizOption | null)[]) {
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
-export default function DrinkQuiz() {
-  const reduceMotion = useReducedMotion();
+interface DrinkQuizProps {
+  /** Skip the built-in "Drink Finder" eyebrow/heading — used on the Products
+   * page, where that heading is already shown in the hero section above. */
+  hideHeading?: boolean;
+}
+
+export default function DrinkQuiz({ hideHeading = false }: DrinkQuizProps = {}) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<(QuizOption | null)[]>(() => QUESTIONS.map(() => null));
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -236,7 +239,11 @@ export default function DrinkQuiz() {
   }, []);
 
   // Move focus to the new heading so screen readers announce each question.
+  // Only on an actual step change, so loading the page never steals focus.
+  const lastView = useRef({ step, finished });
   useEffect(() => {
+    if (lastView.current.step === step && lastView.current.finished === finished) return;
+    lastView.current = { step, finished };
     headingRef.current?.focus({ preventScroll: true });
   }, [step, finished]);
 
@@ -256,10 +263,10 @@ export default function DrinkQuiz() {
           if (step + 1 < TOTAL) setStep(step + 1);
           else setFinished(true);
         },
-        reduceMotion ? 0 : ADVANCE_DELAY_MS,
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ADVANCE_DELAY_MS,
       );
     },
-    [pendingId, step, TOTAL, reduceMotion],
+    [pendingId, step, TOTAL],
   );
 
   const goBack = () => {
@@ -295,66 +302,62 @@ export default function DrinkQuiz() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, question, select, step]);
 
-  const slide = reduceMotion
-    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
-    : { initial: { opacity: 0, x: 24 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -24 } };
-
   return (
-    <section className="mb-14 sm:mb-16" aria-label="Drink finder quiz">
-      <div className="grid lg:grid-cols-[300px_1fr] rounded-3xl overflow-hidden border border-[rgba(212,175,55,0.28)] shadow-[0_25px_60px_rgba(0,0,0,0.85)]">
-        {/* Lifestyle photo panel: extra flourish on larger screens where there's room to spare */}
-        <div className="relative hidden lg:block">
-          <Image
-            src="/assets/kvs/lifestyle-berry-chill.webp"
-            alt="A woman enjoying a Sunfeast Berry Smoothie at home"
-            fill
-            sizes="300px"
-            className="object-cover object-[68%_35%]"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#140A06]" />
-        </div>
+    <section id="quiz" className="py-16 sm:py-24 lg:py-[96px] px-5 sm:px-10 lg:px-20" style={{ background: 'var(--bg-light)' }} aria-label="Drink finder quiz">
+      <div className="max-w-[1280px] mx-auto">
+        {!hideHeading && (
+          <Reveal className="flex flex-col lg:flex-row justify-between lg:items-end gap-5 mb-8 sm:mb-10">
+            <div>
+              <p className="mb-4 text-[13px] font-semibold tracking-[0.2em] uppercase" style={{ color: 'var(--accent-on-light)' }}>
+                Drink Finder
+              </p>
+              <h2 className="text-[34px] sm:text-[44px] lg:text-[56px] leading-[1.02] font-medium tracking-[-0.02em]" style={{ color: 'var(--text-on-light)' }}>
+                Find your perfect drink
+              </h2>
+            </div>
+            <p className="max-w-[420px] text-base sm:text-lg leading-relaxed" style={{ color: 'var(--text-on-light-muted)' }}>
+              Four quick questions on weather, mood, goal and flavour. We&apos;ll match you to one of seven flavours.
+            </p>
+          </Reveal>
+        )}
 
-        <div className="relative bg-[#140A06] p-5 sm:p-9 overflow-hidden">
-          <div
-            aria-hidden
-            className="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] max-w-full h-[300px] rounded-full pointer-events-none"
-            style={{
-              background: 'radial-gradient(ellipse at center, rgba(212,175,55,0.15) 0%, transparent 70%)',
-              filter: 'blur(50px)',
-            }}
-          />
+        <Reveal delay={120} className="grid lg:grid-cols-[400px_minmax(0,1fr)] rounded overflow-hidden bg-[var(--surface-light)]">
+          {/* Lifestyle photo panel: extra flourish on larger screens where there's room to spare */}
+          <div className="relative hidden sm:block min-h-[320px] lg:min-h-[460px]">
+            <Image
+              src="/assets/kvs/lifestyle-berry-chill.webp"
+              alt="A woman enjoying a Sunfeast Berry Smoothie at home"
+              fill
+              sizes="400px"
+              className="object-cover object-[68%_35%]"
+              unoptimized
+            />
+          </div>
 
+          <div className="relative p-5 sm:p-9 lg:p-10 overflow-hidden">
           <div className="relative z-10">
-            <AnimatePresence mode="wait" initial={false}>
               {!finished ? (
-                <motion.div key="quiz" exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                <div key="quiz">
                   {/* ── Stepper ─────────────────────────────────────────── */}
                   <nav aria-label="Quiz progress" className="mb-8">
-                    <p className="text-[13px] text-[var(--gold-light)] mb-3 text-center sm:text-left">
-                      Find your perfect drink
-                    </p>
                     <ol className="grid grid-cols-4 gap-2">
                       {QUESTIONS.map((q, i) => {
                         const done = answers[i] !== null && i !== step;
                         const current = i === step;
                         return (
                           <li key={q.id} aria-current={current ? 'step' : undefined}>
-                            <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                              <motion.div
-                                className="h-full bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-light)]"
-                                initial={false}
-                                animate={{ width: done ? '100%' : current ? '40%' : '0%' }}
-                                transition={{ duration: reduceMotion ? 0 : 0.35, ease: 'easeOut' }}
+                            <div className="h-[3px] overflow-hidden" style={{ background: 'rgba(29,15,9,0.15)' }}>
+                              <div
+                                className="h-full transition-[width] duration-[350ms] ease-out"
+                                style={{ background: 'var(--text-on-light)', width: done || current ? '100%' : '0%' }}
                               />
                             </div>
                             <span
-                              className={`mt-2 block text-[11px] sm:text-xs transition-colors ${current
-                                  ? 'text-[#FAF3E0] font-semibold'
-                                  : done
-                                    ? 'text-[var(--gold-light)]'
-                                    : 'text-[#9C8E7A]'
-                                }`}
+                              className="mt-2 block text-[13px] transition-colors"
+                              style={{
+                                color: current ? 'var(--text-on-light)' : 'var(--text-on-light-muted)',
+                                fontWeight: current ? 600 : 400,
+                              }}
                             >
                               <span className="sr-only">Step {i + 1} of {TOTAL}: </span>
                               {q.step}
@@ -366,31 +369,26 @@ export default function DrinkQuiz() {
                   </nav>
 
                   {/* ── Question ────────────────────────────────────────── */}
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={step}
-                      {...slide}
-                      transition={{ duration: reduceMotion ? 0.15 : 0.28, ease: [0.16, 1, 0.3, 1] }}
-                    >
-                      <div className="text-center max-w-xl mx-auto mb-7">
+                  <div key={step} className="quiz-step">
+                      <div className="mb-6">
                         <h3
                           ref={headingRef}
                           tabIndex={-1}
                           id={`q-${question.id}`}
-                          className="font-display text-2xl sm:text-[2rem] font-bold text-[#FAF3E0] leading-tight outline-none"
+                          className="text-2xl sm:text-[2rem] font-medium leading-tight outline-none"
+                          style={{ color: 'var(--text-on-light)' }}
                         >
                           {question.question}
                         </h3>
-                        <p className="text-sm text-[#CBB89D] mt-2">{question.subtitle}</p>
+                        <p className="text-[15px] mt-2" style={{ color: 'var(--text-on-light-muted)' }}>{question.subtitle}</p>
                       </div>
 
                       <div
                         role="radiogroup"
                         aria-labelledby={`q-${question.id}`}
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl mx-auto"
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-2.5"
                       >
                         {question.options.map((option, idx) => {
-                          const Icon = option.icon;
                           const selected = pendingId
                             ? pendingId === option.id
                             : answers[step]?.id === option.id;
@@ -403,78 +401,50 @@ export default function DrinkQuiz() {
                               role="radio"
                               aria-checked={selected}
                               onClick={() => select(option)}
-                              style={{ ['--accent' as string]: option.accent }}
-                              className={`group relative flex items-center gap-4 p-4 sm:p-5 rounded-2xl text-left cursor-pointer border transition-[border-color,background-color,opacity,box-shadow] duration-200
-                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#140A06]
-                                ${selected
-                                  ? 'border-[var(--gold)] bg-[rgba(212,175,55,0.12)] shadow-[0_0_0_1px_var(--gold),0_12px_30px_-12px_var(--accent)]'
-                                  : 'border-[rgba(212,175,55,0.2)] bg-white/[0.02] hover:border-[color:var(--accent)] hover:bg-white/[0.04] hover:shadow-[0_12px_30px_-14px_var(--accent)]'
-                                }
-                                ${dimmed ? 'opacity-40' : 'opacity-100'}`}
+                              className={`group relative flex items-center gap-3.5 min-h-[72px] px-[18px] py-3.5 rounded text-left cursor-pointer border transition-[border-color,background-color,opacity] duration-200 ${dimmed ? 'opacity-40' : 'opacity-100'}`}
+                              style={{
+                                background: selected ? 'var(--text-on-light)' : 'var(--bg-light)',
+                                color: selected ? 'var(--bg-light)' : 'var(--text-on-light)',
+                                borderColor: selected ? 'var(--text-on-light)' : 'var(--border-on-light-strong)',
+                              }}
                             >
-                              <span
-                                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                                style={{
-                                  background: `color-mix(in srgb, ${option.accent} 14%, transparent)`,
-                                  color: option.accent,
-                                }}
-                              >
-                                <Icon size={24} strokeWidth={1.6} aria-hidden />
-                              </span>
-
-                              <span className="min-w-0 flex-1">
-                                <span className="block text-[15px] font-semibold text-[#FAF3E0]">
+                              <span className="min-w-0 flex-1 flex flex-col gap-0.5">
+                                <span className="text-base font-medium">
                                   {option.label}
                                 </span>
-                                <span className="block text-[13px] text-[#B8AD9E] mt-0.5 leading-snug">
+                                <span className="text-sm opacity-80">
                                   {option.sublabel}
                                 </span>
                               </span>
 
-                              {selected ? (
-                                <motion.span
-                                  initial={reduceMotion ? false : { scale: 0.4, opacity: 0 }}
-                                  animate={{ scale: 1, opacity: 1 }}
-                                  className="w-6 h-6 rounded-full bg-[var(--gold)] text-[#120701] flex items-center justify-center shrink-0"
-                                >
-                                  <Check size={14} strokeWidth={3} aria-hidden />
-                                </motion.span>
-                              ) : (
-                                <kbd
-                                  aria-hidden
-                                  className="hidden sm:flex w-6 h-6 rounded-md border border-white/10 text-[11px] text-[#9C8E7A] items-center justify-center shrink-0 font-sans"
-                                >
-                                  {idx + 1}
-                                </kbd>
-                              )}
+                              <span
+                                className="w-[26px] h-[26px] rounded-full border flex items-center justify-center text-xs shrink-0"
+                                style={{ borderColor: selected ? 'var(--bg-light)' : 'var(--border-on-light-strong)' }}
+                              >
+                                {selected ? <Check size={13} strokeWidth={3} aria-hidden /> : idx + 1}
+                              </span>
                             </button>
                           );
                         })}
                       </div>
 
-                      <div className="flex justify-center min-h-[40px] pt-4">
+                      <div className="min-h-[44px] pt-[18px]">
                         {step > 0 && (
                           <button
                             type="button"
                             onClick={goBack}
-                            className="inline-flex items-center gap-1.5 text-[13px] text-[#B8AD9E] hover:text-[#FAF3E0] transition-colors cursor-pointer py-1.5 px-3 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]"
+                            className="inline-flex items-center gap-1 text-[15px] cursor-pointer"
+                            style={{ color: 'var(--text-on-light-muted)' }}
                           >
-                            <ChevronLeft size={15} aria-hidden />
-                            Back to {QUESTIONS[step - 1].step.toLowerCase()}
+                            ← Back to {QUESTIONS[step - 1].step.toLowerCase()}
                           </button>
                         )}
                       </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </motion.div>
+                  </div>
+                </div>
               ) : (
                 result && (
-                  <motion.div
-                    key="result"
-                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  >
+                  <div key="result" className="panel-in">
                     <ResultView
                       entry={result}
                       runnerUp={runnerUp}
@@ -482,12 +452,12 @@ export default function DrinkQuiz() {
                       headingRef={headingRef}
                       onRetake={retake}
                     />
-                  </motion.div>
+                  </div>
                 )
               )}
-            </AnimatePresence>
           </div>
-        </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -519,29 +489,16 @@ function ResultView({
       {/* Packshot */}
       <div className="lg:col-span-5 flex justify-center">
         <div
-          className="relative w-full max-w-[320px] aspect-[7/8] rounded-3xl overflow-hidden flex items-end justify-center p-6"
-          style={{
-            background: `radial-gradient(ellipse at 50% 85%, ${accentColor}33 0%, #100603 75%)`,
-            border: `1px solid ${accentColor}40`,
-          }}
+          className="relative w-full max-w-[320px] aspect-[4/5] overflow-hidden flex items-center justify-center rounded"
+          style={{ background: `color-mix(in srgb, ${accentColor} 22%, #F2E8D5)` }}
         >
-          <span
-            className="absolute top-4 left-4 px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
-            style={{
-              background: `${accentColor}30`,
-              color: product.accentLight,
-              border: `1px solid ${accentColor}55`,
-            }}
-          >
-            {product.brand}
-          </span>
-          <div className="relative w-44 h-60">
+          <div className="relative w-40 h-56">
             <Image
               src={displayImage}
               alt={displayName}
               fill
               sizes="(max-width: 1024px) 60vw, 320px"
-              className="object-contain object-bottom drop-shadow-[0_20px_35px_rgba(0,0,0,0.9)]"
+              className="object-contain object-bottom drop-shadow-[0_18px_18px_rgba(9,5,3,0.25)]"
               unoptimized
             />
           </div>
@@ -551,16 +508,17 @@ function ResultView({
       {/* Details */}
       <div className="lg:col-span-7 space-y-5">
         <div>
-          <p className="text-[13px] text-[var(--gold-light)]">Your match</p>
+          <p className="text-[13px] font-semibold tracking-[0.2em] uppercase" style={{ color: 'var(--accent-on-light)' }}>Your match</p>
           <h3
             ref={headingRef}
             tabIndex={-1}
-            className="font-display text-3xl sm:text-4xl font-bold text-[#FAF3E0] mt-1 leading-tight outline-none"
+            className="text-3xl sm:text-4xl font-medium mt-2.5 leading-tight outline-none"
+            style={{ color: 'var(--text-on-light)' }}
           >
             {displayName}
           </h3>
           {displayTagline && (
-            <p className="text-sm italic text-[#CBB89D] mt-1.5">&ldquo;{displayTagline}&rdquo;</p>
+            <p className="text-[15px] italic mt-1.5" style={{ color: 'var(--text-on-light-muted)' }}>&ldquo;{displayTagline}&rdquo;</p>
           )}
         </div>
 
@@ -570,7 +528,8 @@ function ResultView({
             a ? (
               <li
                 key={a.id}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs text-[#E8DCC6] bg-white/[0.04] border border-white/10"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border"
+                style={{ color: 'var(--text-on-light)', borderColor: 'var(--border-on-light)' }}
               >
                 <a.icon size={13} style={{ color: a.accent }} aria-hidden />
                 {a.label}
@@ -583,21 +542,16 @@ function ResultView({
           <>
             <ul className="space-y-2.5">
               {rec.whyMatches.map((bullet) => (
-                <li key={bullet} className="flex items-start gap-2.5 text-sm text-[#CBB89D] leading-snug">
+                <li key={bullet} className="flex items-start gap-2.5 text-sm leading-snug" style={{ color: 'var(--text-on-light-muted)' }}>
                   <CheckCircle2 size={17} className="shrink-0 mt-0.5" style={{ color: accentColor }} aria-hidden />
                   {bullet}
                 </li>
               ))}
             </ul>
 
-            <aside className="flex items-start gap-3 p-4 rounded-2xl border border-[rgba(212,175,55,0.3)] bg-[rgba(212,175,55,0.06)]">
-              <span className="w-8 h-8 rounded-xl flex items-center justify-center bg-[rgba(212,175,55,0.18)] shrink-0">
-                <Lightbulb size={16} className="text-[var(--gold)]" aria-hidden />
-              </span>
-              <div>
-                <p className="text-[13px] font-semibold text-[var(--gold-light)] mb-0.5">Did you know?</p>
-                <p className="text-[13px] text-[#FAF3E0] leading-relaxed">{rec.fact}</p>
-              </div>
+            <aside className="p-4 rounded" style={{ background: 'var(--bg-light)' }}>
+              <p className="text-[13px] font-semibold mb-1" style={{ color: 'var(--accent-on-light)' }}>Did you know?</p>
+              <p className="text-[15px] leading-relaxed" style={{ color: 'var(--text-on-light)' }}>{rec.fact}</p>
             </aside>
           </>
         )}
@@ -605,15 +559,15 @@ function ResultView({
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <Link
             href={`/product/${product.id}`}
-            className="btn-gold py-3 px-6 rounded-xl text-sm font-bold inline-flex items-center gap-2 transition-transform hover:scale-[1.03] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-light)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#140A06]"
+            className="btn-dark h-12 px-6 rounded-full text-sm font-semibold inline-flex items-center gap-2 tracking-[0.04em] uppercase"
           >
             View product
-            <ArrowRight size={15} className="text-[#120701]" aria-hidden />
+            <ArrowRight size={15} aria-hidden />
           </Link>
           <button
             type="button"
             onClick={onRetake}
-            className="btn-secondary py-3 px-5 rounded-xl text-sm font-semibold inline-flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]"
+            className="btn-outline-dark h-12 px-5 rounded-full text-sm font-semibold inline-flex items-center gap-1.5 tracking-[0.04em] uppercase"
           >
             <RotateCcw size={14} aria-hidden />
             Retake quiz
@@ -621,11 +575,12 @@ function ResultView({
         </div>
 
         {runnerUp && (
-          <p className="text-[13px] text-[#9C8E7A]">
+          <p className="text-sm" style={{ color: 'var(--text-on-light-muted)' }}>
             Also a good fit:{' '}
             <Link
               href={`/product/${runnerUp.product.id}`}
-              className="text-[#E8DCC6] underline decoration-[rgba(212,175,55,0.4)] underline-offset-4 hover:text-[var(--gold-light)]"
+              className="underline underline-offset-4"
+              style={{ color: 'var(--text-on-light)' }}
             >
               {runnerUp.variant?.name || runnerUp.product.name}
             </Link>

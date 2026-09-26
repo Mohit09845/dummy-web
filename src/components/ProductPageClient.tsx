@@ -1,25 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ShoppingBag,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  Layers,
-  Activity,
-  Plus,
-} from 'lucide-react';
+import { Check, ShoppingBag } from 'lucide-react';
 import { Product, ProductVariant } from '@/data/products';
+import { FLAVOURS } from '@/lib/flavours';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ProductCard, { flavourToProductCard } from '@/components/ProductCard';
+import FaqSection from '@/components/FaqSection';
+import Reveal from '@/components/Reveal';
 import { getProductFaqs } from '@/lib/productFaq';
 
-// Never present on initial paint (only mounts after a click) and has no
-// SEO value, so it's excluded from the route's initial JS entirely.
+// Only needed after a click, so it stays out of the route's initial JS.
 const BuyNowModal = dynamic(() => import('@/components/BuyNowModal'), { ssr: false });
 
 interface ProductPageClientProps {
@@ -29,25 +24,28 @@ interface ProductPageClientProps {
 interface GalleryImage {
   id: string;
   name: string;
-  shortName: string;
   label: string;
   image: string;
-  color: string;
 }
 
 // The packshot files referenced by product data are sized for the small
-// card contexts (ProductCard, ProductsListingClient, DrinkQuiz) where most
-// of them are used. This carousel is the one place that shows them much
-// larger, so it asks for the "-detail" variant generated alongside each one.
+// card contexts (ProductCard, DrinkQuiz) where most of them are used. This
+// stage is the one place that shows them much larger,
+// so it asks for the "-detail" variant generated alongside each one.
 function toDetail(src: string): string {
   return src.replace(/\.webp$/, '-detail.webp');
 }
 
 export default function ProductPageClient({ product }: ProductPageClientProps) {
-  const [modalOpen, setModalOpen] = useState(false);
   const hasVariants = Boolean(product.variants && product.variants.length > 1);
   const productFaqs = useMemo(() => getProductFaqs(product), [product]);
-  const [openFaqId, setOpenFaqId] = useState<string | null>(productFaqs[0]?.id ?? null);
+  const [buyOpen, setBuyOpen] = useState(false);
+  const [buyRequested, setBuyRequested] = useState(false);
+  const closeBuy = useCallback(() => setBuyOpen(false), []);
+  const openBuy = () => {
+    setBuyRequested(true);
+    setBuyOpen(true);
+  };
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     product.variants && product.variants.length > 0 ? product.variants[0] : null
@@ -67,58 +65,17 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]);
 
-  // Compile only the currently displayed variant's own images (front and
-  // back packshots), not every flavour's, so the carousel never shows a
-  // pack the visitor isn't looking at.
   const galleryImages = useMemo<GalleryImage[]>(() => {
+    const front = selectedVariant?.image || product.packshot;
+    const back = selectedVariant?.backImage || product.backshotImage;
     const images: GalleryImage[] = [];
-    if (selectedVariant) {
-      if (selectedVariant.image) {
-        images.push({
-          id: `${selectedVariant.id}-front`,
-          name: selectedVariant.name,
-          shortName: selectedVariant.shortName,
-          label: 'Front Pack',
-          image: toDetail(selectedVariant.image),
-          color: selectedVariant.color,
-        });
-      }
-      if (selectedVariant.backImage) {
-        images.push({
-          id: `${selectedVariant.id}-back`,
-          name: selectedVariant.name,
-          shortName: selectedVariant.shortName,
-          label: 'Back of Pack',
-          image: toDetail(selectedVariant.backImage),
-          color: selectedVariant.color,
-        });
-      }
-    } else {
-      if (product.packshot) {
-        images.push({
-          id: `${product.id}-front`,
-          name: product.shortName,
-          shortName: product.shortName,
-          label: 'Front Pack',
-          image: toDetail(product.packshot),
-          color: product.accentColor,
-        });
-      }
-      if (product.backshotImage) {
-        images.push({
-          id: `${product.id}-back`,
-          name: product.shortName,
-          shortName: product.shortName,
-          label: 'Back of Pack',
-          image: toDetail(product.backshotImage),
-          color: product.accentColor,
-        });
-      }
-    }
+    if (front) images.push({ id: 'front', name: selectedVariant?.name || product.name, label: 'Front of pack', image: toDetail(front) });
+    if (back) images.push({ id: 'back', name: selectedVariant?.name || product.name, label: 'Back of pack', image: toDetail(back) });
     return images;
   }, [product, selectedVariant]);
 
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [viewIndex, setViewIndex] = useState(0);
+  const [swapped, setSwapped] = useState(false);
 
   // Reset to the front pack whenever the visitor switches flavour. Adjusted
   // during render (React's recommended pattern) rather than in an effect,
@@ -127,478 +84,284 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
   const [lastVariantId, setLastVariantId] = useState(selectedVariant?.id);
   if (selectedVariant?.id !== lastVariantId) {
     setLastVariantId(selectedVariant?.id);
-    setActiveImageIndex(0);
+    setViewIndex(0);
   }
 
-  const prevImage = () => {
-    setActiveImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
-  };
+  const currentView = galleryImages[viewIndex] || galleryImages[0];
+  const tint = `color-mix(in srgb, ${selectedVariant?.color || product.accentColor} 24%, #F2E8D5)`;
 
-  const nextImage = () => {
-    setActiveImageIndex((prev) => (prev + 1) % galleryImages.length);
-  };
-
-  const currentItem = galleryImages[activeImageIndex] || galleryImages[0];
-  const activeColor = currentItem?.color || selectedVariant?.color || product.accentColor;
+  const related = useMemo(() => FLAVOURS.filter((f) => f.product.id !== product.id).slice(0, 4), [product.id]);
 
   return (
     <>
-      {/* ── Top Navigation Bar (Consistent site header, no back button) ──── */}
       <Header />
 
-      <main className="min-h-screen pt-16 bg-[#090503]">
-        {/* ── Hero Gradient Showcase Section ───────────────────── */}
-        <div
-          className="relative pt-12 pb-16 sm:pb-24 overflow-hidden"
-          style={{
-            background: `linear-gradient(160deg, ${activeColor}20 0%, #090503 65%)`,
-          }}
-        >
-          {/* Ambient radial glow */}
-          <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full pointer-events-none"
-            style={{
-              background: `radial-gradient(ellipse at center, ${activeColor}25 0%, transparent 65%)`,
-              filter: 'blur(55px)',
-            }}
-          />
+      <main style={{ background: 'var(--bg-light)', color: 'var(--text-on-light)' }} className="pt-16 sm:pt-[76px] lg:pt-[84px]">
+        {/* ── Product hero ── */}
+        <section className="pt-8 pb-8 sm:pb-10 px-5 sm:px-10 lg:px-20">
+          <div className="max-w-[1280px] mx-auto">
+            <nav aria-label="Breadcrumb" className="flex flex-wrap gap-2 text-sm" style={{ color: 'var(--text-on-light-muted)' }}>
+              <Link href="/">Home</Link>
+              <span aria-hidden="true">/</span>
+              <Link href="/products">Products</Link>
+              <span aria-hidden="true">/</span>
+              <span aria-current="page" style={{ color: 'var(--text-on-light)' }}>{product.shortName}</span>
+            </nav>
 
-          <div className="max-w-7xl mx-auto px-5 sm:px-10 lg:px-16 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-              {/* ── Left Column: Interactive Product Image Carousel ───────────────── */}
-              <motion.div
-                initial={{ opacity: 0, x: -35 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col items-center gap-4 w-full"
-              >
-                {/* Rounded Packshot Stage with Left & Right Arrow Buttons */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mt-8 items-start">
+              {/* ── Gallery ── */}
+              <div className="flex flex-col gap-3">
                 <div
-                  className="relative w-full max-w-md mx-auto h-[420px] sm:h-[500px] rounded-[2.5rem] overflow-hidden flex items-end justify-center group transition-all duration-500 select-none"
-                  style={{
-                    background: `linear-gradient(160deg, ${activeColor}20 0%, #140A06 100%)`,
-                    border: `1px solid ${activeColor}40`,
-                    boxShadow: `0 35px 90px -20px ${activeColor}35, 0 12px 45px -10px rgba(0,0,0,0.85)`,
-                  }}
+                  className="relative h-[320px] sm:h-[440px] lg:h-[560px] rounded flex items-center justify-center overflow-hidden"
+                  style={{ background: tint }}
                 >
-                  {/* Spotlight Behind Packshot */}
-                  <div
-                    className="absolute inset-0 pointer-events-none transition-all duration-700"
-                    style={{
-                      background: `radial-gradient(ellipse at 50% 80%, ${activeColor}30 0%, transparent 68%)`,
-                    }}
-                  />
-
-                  {/* Active Image Tag Overlay */}
-                  <div className="absolute top-5 left-5 right-20 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-[var(--border)] text-[11px] font-bold uppercase tracking-wider text-[#FAF3E0] shadow-md backdrop-blur-md overflow-hidden">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0 shadow-[0_0_8px_currentColor]"
-                      style={{ background: activeColor, color: activeColor }}
-                    />
-                    <span className="truncate">
-                      {currentItem.name} <span className="opacity-50">•</span>{' '}
-                      <span className="text-[var(--gold-light)]">{currentItem.label}</span>
-                    </span>
-                  </div>
-
-                  {/* Counter badge top right */}
-                  <div className="absolute top-5 right-5 z-20 px-2.5 py-1 rounded-full glass border border-[var(--border)] text-[10px] font-bold text-[var(--gold-light)] shadow-md">
-                    {activeImageIndex + 1} / {galleryImages.length}
-                  </div>
-
-                  {/* Left Arrow Button */}
-                  <button
-                    type="button"
-                    onClick={prevImage}
-                    aria-label="Previous product image"
-                    className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center glass border border-[var(--border)] hover:border-[var(--gold)] hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-[0_4px_25px_rgba(0,0,0,0.9)] backdrop-blur-md text-[var(--gold-light)] bg-[#140A06]/90"
-                  >
-                    <ChevronLeft size={22} />
-                  </button>
-
-                  {/* Right Arrow Button */}
-                  <button
-                    type="button"
-                    onClick={nextImage}
-                    aria-label="Next product image"
-                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center glass border border-[var(--border)] hover:border-[var(--gold)] hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-[0_4px_25px_rgba(0,0,0,0.9)] backdrop-blur-md text-[var(--gold-light)] bg-[#140A06]/90"
-                  >
-                    <ChevronRight size={22} />
-                  </button>
-
-                  {/* Packshot Image with Smooth Swap & Hover Zoom */}
-                  <div className="relative z-10 h-[340px] sm:h-[420px] w-[260px] flex items-end justify-center pb-4">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={currentItem.id}
-                        initial={{ opacity: 0, scale: 0.93 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.93 }}
-                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                        whileHover={{ scale: 1.05 }}
-                        className="relative w-full h-full flex items-end justify-center cursor-pointer transition-transform duration-300"
-                      >
-                        <Image
-                          src={currentItem.image}
-                          alt={`${product.name} - ${currentItem.name} (${currentItem.label})`}
-                          fill
-                          className="object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.85)] transition-transform duration-500 group-hover:scale-105"
-                          sizes="(max-width: 640px) 90vw, 420px"
-                          priority
-                          unoptimized
-                        />
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                {/* ── Image Selector Dots Underneath ── */}
-                <div className="flex items-center justify-center gap-2 p-1.5 rounded-full glass border border-[var(--border)] bg-black/40">
-                  {galleryImages.map((item, idx) => {
-                    const isSelected = activeImageIndex === idx;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setActiveImageIndex(idx)}
-                        title={`${item.name} (${item.label})`}
-                        aria-label={`View ${item.name} ${item.label}`}
-                        className={`relative p-0.5 rounded-full transition-all duration-200 cursor-pointer ${
-                          isSelected
-                            ? 'scale-125 ring-2 ring-[var(--gold)] ring-offset-1 ring-offset-[#090503]'
-                            : 'hover:scale-115 opacity-60 hover:opacity-100'
-                        }`}
-                      >
-                        <span
-                          className="block w-3 h-3 rounded-full"
-                          style={{
-                            background: item.color,
-                            boxShadow: isSelected ? `0 0 10px ${item.color}` : 'none',
-                          }}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-
-              {/* ── Right Column: Product Information & Purchase ───────────────── */}
-              <motion.div
-                initial={{ opacity: 0, x: 35 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                className="space-y-6"
-              >
-                {/* Aashirvaad carries its own brand mark alongside Sunfeast/Dark Fantasy */}
-                {product.brand === 'Aashirvaad' && (
-                  <div className="relative w-32 h-11">
-                    <Image
-                      src="/assets/logos/aashirvaad-logo.webp"
-                      alt="Aashirvaad"
-                      fill
-                      className="object-contain object-left"
-                      unoptimized
-                    />
-                  </div>
-                )}
-
-                {/* Brand & Category badges */}
-                <div className="flex items-center gap-2 flex-wrap">
                   <span
-                    className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
-                    style={{
-                      background: `${activeColor}25`,
-                      color: product.accentLight,
-                      border: `1px solid ${activeColor}50`,
-                    }}
+                    className="absolute top-4 left-4 text-[12px] font-semibold tracking-[0.14em] uppercase"
+                    style={{ color: 'var(--text-on-light)' }}
                   >
-                    {product.brand}
+                    {currentView?.label}
                   </span>
-                  <span className="px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider glass text-[#CBB89D]">
-                    {product.category}
+                  <span className="absolute top-4 right-4 text-[13px] tracking-[0.1em]" style={{ color: 'var(--text-on-light-muted)' }}>
+                    {viewIndex + 1} / {galleryImages.length}
                   </span>
-                  <span className="px-3.5 py-1 rounded-full text-xs font-medium uppercase tracking-wider bg-[rgba(34,197,94,0.15)] text-[#4ade80] border border-[rgba(34,197,94,0.3)]">
-                    100% Vegetarian
-                  </span>
+                  {currentView && (
+                    // Only animate swaps the visitor triggers; animating the
+                    // first paint would delay LCP (this image is the LCP element).
+                    <div key={currentView.image} className={`relative h-[86%] w-[70%] ${swapped ? 'image-swap' : ''}`}>
+                      <Image
+                        src={currentView.image}
+                        alt={`${currentView.name}, ${currentView.label}`}
+                        fill
+                        priority
+                        unoptimized
+                        sizes="(max-width: 1024px) 80vw, 560px"
+                        className="object-contain drop-shadow-[0_24px_24px_rgba(9,5,3,0.25)]"
+                      />
+                    </div>
+                  )}
                 </div>
 
-                {/* Main Product Title & Tagline */}
-                <div>
-                  <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight text-[#FAF3E0]">
-                    {selectedVariant ? selectedVariant.name : product.name}
-                  </h1>
-                  <p className="mt-2.5 text-lg sm:text-xl font-medium italic text-[var(--gold-light)]">
-                    &ldquo;{selectedVariant?.tagline || product.tagline}&rdquo;
-                  </p>
-                </div>
-
-                {/* Flavour Switcher (only for multi-variant products) */}
-                {hasVariants && product.variants && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {product.variants.map((v) => {
-                      const isSelected = selectedVariant?.id === v.id;
+                {galleryImages.length > 1 && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {galleryImages.map((img, i) => {
+                      const selected = i === viewIndex;
                       return (
                         <button
-                          key={v.id}
+                          key={img.id}
                           type="button"
-                          onClick={() => setSelectedVariant(v)}
-                          aria-pressed={isSelected}
-                          aria-label={`View ${v.name}`}
-                          className={`flex items-center gap-2 pl-2 pr-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
-                            isSelected
-                              ? 'border-[var(--gold)] bg-[rgba(212,175,55,0.12)] text-[var(--gold-light)]'
-                              : 'border-[var(--border)] text-[#CBB89D] hover:border-[var(--border-strong)]'
-                          }`}
+                          aria-pressed={selected}
+                          aria-label={`View ${img.label}`}
+                          onClick={() => { setSwapped(true); setViewIndex(i); }}
+                          className="flex items-center justify-center h-[88px] rounded cursor-pointer border"
+                          style={{ background: selected ? tint : 'transparent', borderColor: selected ? 'var(--text-on-light)' : 'var(--border-on-light)' }}
                         >
-                          <span
-                            className="block w-3 h-3 rounded-full shrink-0"
-                            style={{
-                              background: v.color,
-                              boxShadow: isSelected ? `0 0 8px ${v.color}` : 'none',
-                            }}
-                          />
-                          {v.shortName}
+                          <div className="relative h-[68px] w-[52px]">
+                            <Image src={img.image} alt="" fill unoptimized sizes="52px" className="object-contain" />
+                          </div>
                         </button>
                       );
                     })}
                   </div>
                 )}
-
-                {/* Pack Specifications Block (No Price) */}
-                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl glass border border-[var(--border)] bg-[#140A06]/80">
-                  <div className="space-y-0.5">
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)] block">
-                      Net Quantity
-                    </span>
-                    <span className="text-sm font-bold text-[#FAF3E0] px-3.5 py-1 rounded-lg bg-[rgba(212,175,55,0.1)] border border-[var(--border)] inline-block">
-                      {product.volume}
-                    </span>
-                  </div>
-
-                  <div className="h-9 w-[1px] bg-[rgba(212,175,55,0.2)] mx-1 hidden sm:block" />
-
-                  <div className="space-y-0.5">
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)] block">
-                      Packaging
-                    </span>
-                    <span className="text-xs font-semibold text-[#CBB89D]">
-                      Aseptic Tetra Pak
-                    </span>
-                  </div>
-
-                  <div className="h-9 w-[1px] bg-[rgba(212,175,55,0.2)] mx-1 hidden sm:block" />
-
-                  <div className="space-y-0.5 text-right">
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)] block">
-                      Serving Note
-                    </span>
-                    <span className="text-xs font-semibold text-[var(--gold-light)]">
-                      Serve Chilled • Shake Well
-                    </span>
-                  </div>
-                </div>
-
-                {/* Long Description */}
-                <p className="text-sm sm:text-base leading-relaxed text-[#CBB89D]">
-                  {product.longDescription}
-                </p>
-
-                {/* Highlights List */}
-                <div className="space-y-2.5 pt-1">
-                  {product.highlights.map((h, i) => (
-                    <div key={i} className="flex items-center gap-3 text-sm text-[#FAF3E0]">
-                      <CheckCircle2
-                        size={17}
-                        className="shrink-0"
-                        style={{ color: activeColor }}
-                      />
-                      <span>{h}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* ── Buy Section ── */}
-                <div className="pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(true)}
-                    className="btn-gold w-full py-4 px-8 rounded-2xl text-base font-bold tracking-wide flex items-center justify-center gap-2.5 shadow-2xl hover:scale-102 active:scale-98 transition-all cursor-pointer group"
-                  >
-                    <ShoppingBag size={18} />
-                    <span>Buy Now</span>
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Ingredients & Nutrition Details Section ───────────────────── */}
-        <section className="py-16 sm:py-20 bg-[#0E0805] border-t border-[var(--border)]">
-          <div className="max-w-7xl mx-auto px-5 sm:px-10 lg:px-16">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-pill mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--gold-light)]">
-                <span>Crafted For Excellence</span>
-              </span>
-              <h2 className="font-display text-3xl sm:text-4xl font-bold text-[#FAF3E0]">
-                Ingredients &amp; <span className="text-gold-gradient italic">Nutrition</span>
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-2">
-                Complete transparency in every sip, authentic ingredients and verified nutritional profile.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-              {/* Left Column: Key Ingredients */}
-              <div className="lg:col-span-5 space-y-4">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-[var(--border)]">
-                  <Layers size={18} className="text-[var(--gold)]" />
-                  <h3 className="font-display text-xl font-bold text-[#FAF3E0]">
-                    Key Ingredients &amp; Recipe
-                  </h3>
-                </div>
-
-                <div className="space-y-2.5">
-                  {product.ingredients.map((ing, i) => (
-                    <div
-                      key={i}
-                      className="px-4 py-3.5 rounded-xl glass border border-[var(--border)] flex items-center gap-3 text-sm text-[#CBB89D] hover:border-[var(--border-strong)] transition-colors"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)] shrink-0" />
-                      <span>{ing}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="p-4 rounded-2xl glass border border-[var(--border)] bg-[#140A06]/60 text-xs text-[var(--text-muted)] leading-relaxed">
-                  <p className="font-semibold text-[#FAF3E0] mb-1">Zero Chemical Preservatives</p>
-                  Sterilised via Ultra-High Temperature (UHT) thermal processing and aseptically packaged in multi-layer protective cartons to lock in freshness naturally.
-                </div>
               </div>
 
-              {/* Right Column: Nutrition Information Table */}
-              <div className="lg:col-span-7 space-y-4">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-[var(--border)]">
-                  <Activity size={18} className="text-[var(--gold)]" />
-                  <h3 className="font-display text-xl font-bold text-[#FAF3E0]">
-                    Nutritional Facts
-                  </h3>
-                  <span className="text-xs text-[var(--text-muted)] ml-auto">
-                    Per 100 ml / {product.volume}
+              {/* ── Details ── */}
+              <div className="panel-in [animation-delay:120ms]">
+                {product.brand === 'Aashirvaad' && (
+                  <div className="relative w-32 h-9 mb-5">
+                    <Image src="/assets/logos/aashirvaad-logo.webp" alt="Aashirvaad" fill className="object-contain object-left" unoptimized />
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1.5 text-[12px] font-semibold tracking-[0.12em] uppercase" style={{ background: 'var(--text-on-light)', color: 'var(--bg-light)' }}>
+                    {product.brand}
+                  </span>
+                  <span className="px-3 py-1.5 text-[12px] font-semibold tracking-[0.12em] uppercase border" style={{ borderColor: 'var(--border-on-light-strong)' }}>
+                    {product.category}
+                  </span>
+                  <span className="px-3 py-1.5 text-[12px] font-semibold tracking-[0.12em] uppercase border" style={{ borderColor: '#2F7A3E', color: '#1F5A2B' }}>
+                    100% Vegetarian
                   </span>
                 </div>
 
-                <div className="glass rounded-2xl border border-[var(--border)] overflow-hidden shadow-xl bg-[#140A06]/80">
-                  <div className="grid grid-cols-3 p-3.5 bg-[#1A0F09] border-b border-[var(--border)] text-xs font-bold uppercase tracking-wider text-[var(--gold-light)]">
-                    <span>Nutrient</span>
-                    <span className="text-center">Per 100 ml</span>
-                    <span className="text-right">Per Serve ({product.volume})</span>
-                  </div>
+                <h1 className="mt-6 text-[32px] sm:text-[40px] lg:text-[46px] leading-[1.03] font-medium tracking-[-0.025em] text-balance" style={{ color: 'var(--text-on-light)' }}>
+                  {selectedVariant ? selectedVariant.name : product.name}
+                </h1>
+                <p className="mt-3.5 text-lg italic" style={{ color: 'var(--accent-on-light)' }}>
+                  &ldquo;{selectedVariant?.tagline || product.tagline}&rdquo;
+                </p>
 
-                  <div className="divide-y divide-[rgba(212,175,55,0.08)]">
-                    {product.nutrition.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="grid grid-cols-3 p-3.5 text-xs sm:text-sm hover:bg-[rgba(212,175,55,0.05)] transition-colors"
-                      >
-                        <span className="font-medium text-[#FAF3E0]">{item.label}</span>
-                        <span className="text-center text-[#CBB89D]">{item.value}</span>
-                        <span className="text-right font-semibold text-[var(--gold-light)]">
-                          {item.perServing || '-'}
-                        </span>
-                      </div>
-                    ))}
+                {hasVariants && product.variants && (
+                  <div className="mt-8">
+                    <p className="mb-3 text-[13px] font-semibold tracking-[0.16em] uppercase" style={{ color: 'var(--text-on-light-muted)' }}>
+                      Flavour
+                    </p>
+                    <div role="radiogroup" aria-label="Flavour" className="flex flex-wrap gap-2">
+                      {product.variants.map((v) => {
+                        const selected = selectedVariant?.id === v.id;
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            onClick={() => { setSwapped(true); setSelectedVariant(v); }}
+                            className="flex items-center gap-2.5 h-11 pl-3 pr-4.5 rounded-full text-[15px] font-medium cursor-pointer border"
+                            style={{
+                              background: selected ? 'var(--text-on-light)' : 'transparent',
+                              color: selected ? 'var(--bg-light)' : 'var(--text-on-light)',
+                              borderColor: selected ? 'var(--text-on-light)' : 'var(--border-on-light-strong)',
+                            }}
+                          >
+                            <span className="w-3.5 h-3.5 rounded-full" style={{ background: v.color, border: '1px solid rgba(250,243,224,0.5)' }} />
+                            {v.shortName}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                <p className="mt-8 text-[13px] font-semibold tracking-[0.16em] uppercase" style={{ color: 'var(--text-on-light-muted)' }}>
+                  Why you&apos;ll love it
+                </p>
+                <ul className="mt-3 list-none">
+                  {product.highlights.map((h) => (
+                    <li key={h} className="flex gap-3.5 border-t py-3 text-base leading-snug" style={{ borderColor: 'var(--border-on-light)' }}>
+                      <Check size={17} className="shrink-0 mt-0.5" style={{ color: 'var(--accent-on-light)' }} aria-hidden />
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+
+                <dl className="grid grid-cols-1 sm:grid-cols-3 gap-px mt-6" style={{ background: 'var(--border-on-light)', border: '1px solid var(--border-on-light)' }}>
+                  <div className="p-3.5" style={{ background: 'var(--bg-light)' }}>
+                    <dt className="text-[12px] font-semibold tracking-[0.14em] uppercase" style={{ color: 'var(--text-on-light-muted)' }}>Net quantity</dt>
+                    <dd className="mt-1 text-[17px] font-medium">{product.volume}</dd>
+                  </div>
+                  <div className="p-3.5" style={{ background: 'var(--bg-light)' }}>
+                    <dt className="text-[12px] font-semibold tracking-[0.14em] uppercase" style={{ color: 'var(--text-on-light-muted)' }}>Packaging</dt>
+                    <dd className="mt-1 text-[17px] font-medium">Aseptic Tetra Pak</dd>
+                  </div>
+                  <div className="p-3.5" style={{ background: 'var(--bg-light)' }}>
+                    <dt className="text-[12px] font-semibold tracking-[0.14em] uppercase" style={{ color: 'var(--text-on-light-muted)' }}>Serving note</dt>
+                    <dd className="mt-1 text-[17px] font-medium">Serve chilled · Shake well</dd>
+                  </div>
+                </dl>
+
+                <button
+                  type="button"
+                  onClick={openBuy}
+                  aria-haspopup="dialog"
+                  className="btn-dark group mt-8 w-full sm:w-auto sm:min-w-[280px] flex items-center justify-center gap-2.5 h-[56px] px-9 rounded-full text-sm font-semibold tracking-[0.1em] uppercase"
+                >
+                  <ShoppingBag size={17} aria-hidden />
+                  Buy now
+                  <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+                </button>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-on-light-muted)' }}>
+                  Available on Blinkit, Zepto, Swiggy Instamart, Amazon &amp; more.
+                </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ── Product FAQ Section ───────────────────────────────────────── */}
-        <section className="py-16 sm:py-20 border-t border-[var(--border)]">
-          <div className="max-w-3xl mx-auto px-5 sm:px-10 lg:px-16">
-            <div className="text-center mb-10">
-              <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-pill mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--gold-light)]">
-                <span>Got Questions?</span>
-              </span>
-              <h2 className="font-display text-3xl sm:text-4xl font-bold text-[#FAF3E0]">
-                {product.shortName} <span className="text-gold-gradient italic">FAQs</span>
+        {/* ── Ingredients & nutrition ── */}
+        <section className="py-14 sm:py-20 px-5 sm:px-10 lg:px-20">
+          <div className="max-w-[1280px] mx-auto">
+            <Reveal>
+              <p className="mb-4 text-[13px] font-semibold tracking-[0.2em] uppercase" style={{ color: 'var(--accent-on-light)' }}>
+                Complete transparency
+              </p>
+              <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] leading-[1.02] font-medium tracking-[-0.02em]" style={{ color: 'var(--text-on-light)' }}>
+                Ingredients &amp; nutrition
               </h2>
-            </div>
+            </Reveal>
 
-            <div className="space-y-3">
-              {productFaqs.map((faq) => {
-                const isOpen = openFaqId === faq.id;
-                return (
-                  <div
-                    key={faq.id}
-                    className="rounded-2xl transition-colors duration-300 overflow-hidden"
-                    style={{
-                      background: isOpen ? 'var(--bg-card-hover)' : 'var(--bg-card)',
-                      border: isOpen ? '1px solid var(--border-strong)' : '1px solid var(--border)',
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setOpenFaqId((prev) => (prev === faq.id ? null : faq.id))}
-                      aria-expanded={isOpen}
-                      className="w-full text-left px-5 py-4 sm:py-5 flex items-center justify-between gap-4 transition-colors group cursor-pointer"
-                    >
-                      <span
-                        className={`text-sm sm:text-base font-semibold leading-snug transition-colors ${
-                          isOpen ? 'text-[var(--gold-light)]' : 'text-[#FAF3E0] group-hover:text-[var(--gold-light)]'
-                        }`}
-                      >
-                        {faq.question}
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-10 lg:gap-16 mt-8 sm:mt-10 items-start">
+              <Reveal delay={80}>
+                <h3 className="mb-2 text-xl font-medium" style={{ color: 'var(--text-on-light)' }}>Key ingredients</h3>
+                <ol className="list-none m-0 p-0">
+                  {product.ingredients.map((ing, i) => (
+                    <li key={ing} className="flex gap-4 border-t py-3.5 text-base leading-snug" style={{ borderColor: 'var(--border-on-light)' }}>
+                      <span className="text-[13px] font-semibold min-w-[22px]" style={{ color: 'var(--accent-on-light)' }}>
+                        {String(i + 1).padStart(2, '0')}
                       </span>
-                      <span
-                        className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300"
-                        style={{
-                          background: isOpen ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.08)',
-                          color: isOpen ? 'var(--gold-light)' : 'var(--gold)',
-                          border: '1px solid var(--border)',
-                          transform: isOpen ? 'rotate(135deg)' : 'rotate(0deg)',
-                        }}
-                      >
-                        <Plus size={14} />
-                      </span>
-                    </button>
+                      {ing}
+                    </li>
+                  ))}
+                </ol>
+                <div className="mt-4 p-5 rounded" style={{ background: 'var(--surface-light)' }}>
+                  <p className="mb-1 text-[15px] font-semibold">Zero chemical preservatives</p>
+                  <p className="text-[15px] leading-relaxed" style={{ color: 'var(--text-on-light-muted)' }}>
+                    Sterilised via Ultra-High Temperature (UHT) thermal processing and aseptically packaged in multi-layer protective cartons to lock in freshness naturally.
+                  </p>
+                </div>
+              </Reveal>
 
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.div
-                          key="content"
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                          style={{ overflow: 'hidden' }}
-                        >
-                          <p className="px-5 pb-5 pt-3 text-sm leading-relaxed border-t border-[rgba(212,175,55,0.08)]" style={{ color: 'var(--text-secondary)' }}>
-                            {faq.answer}
-                          </p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+              <Reveal delay={160}>
+                <h3 className="mb-2 text-xl font-medium" style={{ color: 'var(--text-on-light)' }}>Nutritional facts</h3>
+                <div role="table" aria-label="Nutritional facts">
+                  <div role="row" className="grid grid-cols-3 gap-3 border-b pb-3 text-[12px] font-semibold tracking-[0.14em] uppercase" style={{ borderColor: 'var(--text-on-light)' }}>
+                    <span role="columnheader">Nutrient</span>
+                    <span role="columnheader" className="text-right">Per 100 ml</span>
+                    <span role="columnheader" className="text-right">Per serve ({product.volume})</span>
                   </div>
-                );
-              })}
+                  {product.nutrition.map((item) => (
+                    <div key={item.label} role="row" className="grid grid-cols-3 gap-3 border-b py-3.5" style={{ borderColor: 'var(--border-on-light)' }}>
+                      <span role="rowheader" className="font-medium">{item.label}</span>
+                      <span role="cell" className="text-right" style={{ color: 'var(--text-on-light-muted)' }}>{item.value}</span>
+                      <span role="cell" className="text-right font-medium">{item.perServing || '-'}</span>
+                    </div>
+                  ))}
+                </div>
+              </Reveal>
             </div>
           </div>
         </section>
 
-        <Footer />
+        {/* ── FAQ (same UI as the homepage) ── */}
+        <FaqSection
+          id="product-faq"
+          eyebrow="Got questions?"
+          title={`${product.shortName} FAQs`}
+          items={productFaqs}
+        />
+
+        {/* ── You may also like ── */}
+        <section className="pt-4 sm:pt-8 pb-16 sm:pb-24 px-5 sm:px-10 lg:px-20">
+          <div className="max-w-[1280px] mx-auto">
+            <Reveal className="flex justify-between items-end gap-4 mb-8">
+              <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: 'var(--text-on-light)' }}>
+                You may also like
+              </h2>
+              <Link href="/products" className="pb-1 border-b text-sm font-semibold tracking-[0.08em] uppercase" style={{ borderColor: 'var(--text-on-light)', color: 'var(--text-on-light)' }}>
+                All products →
+              </Link>
+            </Reveal>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-10">
+              {related.map((flavour, i) => (
+                <Reveal key={flavour.key} delay={i * 90}>
+                  <ProductCard card={flavourToProductCard(flavour)} fluid />
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
 
-      {/* Buy Now Modal */}
-      {modalOpen && (
+      {buyRequested && (
         <BuyNowModal
-          onClose={() => setModalOpen(false)}
-          productName={product.shortName}
+          open={buyOpen}
+          onClose={closeBuy}
+          productName={selectedVariant?.name || product.name}
           platforms={product.platforms}
         />
       )}
+
+      <Footer />
     </>
   );
 }

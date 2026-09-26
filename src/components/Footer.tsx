@@ -3,20 +3,20 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Globe, Share2, MessageCircle, Send, Mail, Check } from 'lucide-react';
 
-const QUICK_LINKS = [
+const EXPLORE_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'Explore All Products', href: '/products' },
-  { label: 'Beverages Collection', href: '/#products' },
+  { label: 'Occasions', href: '/occasions/beat-the-heat' },
   { label: 'Frequently Asked Questions', href: '/#faq' },
 ];
 
-const SOCIALS = [
-  { icon: <MessageCircle size={18} />, href: 'https://www.instagram.com/darkfantasycreations', label: 'Instagram' },
-  { icon: <Globe size={18} />, href: 'https://darkfantasycreations.com/', label: 'Official Website' },
-  { icon: <Share2 size={18} />, href: 'https://www.facebook.com/darkfantasy', label: 'Facebook' },
-  { icon: <Send size={18} />, href: 'https://www.youtube.com', label: 'YouTube' },
+const SOCIAL_LINKS = [
+  { label: 'Instagram', href: 'https://www.instagram.com/darkfantasycreations', icon: '/assets/logos/Instagram_logo.svg' },
+  { label: 'Facebook', href: 'https://www.facebook.com/darkfantasy', icon: '/assets/logos/facebook.webp' },
+  // Black mark on a transparent background: invisible on the dark footer without a white plate behind it.
+  { label: 'X (Twitter)', href: 'https://x.com/darkfantasycreations', icon: '/assets/logos/twitter-x.webp', plate: true },
+  { label: 'YouTube', href: 'https://www.youtube.com', icon: '/assets/logos/youtube.webp' },
 ];
 
 export default function Footer() {
@@ -35,127 +35,116 @@ export default function Footer() {
   };
 
   return (
-    <footer
-      className="pt-16 pb-10 border-t relative overflow-hidden"
-      style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
-    >
-      <div className="max-w-7xl mx-auto px-5 sm:px-10 lg:px-16">
-        {/* Main Footer Columns */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 pb-12 border-b border-[var(--border)]">
-          {/* Brand column */}
-          <div className="sm:col-span-1 space-y-4">
-            <Link href="/" className="relative w-44 h-11 block cursor-pointer">
+    <footer className="pt-14 sm:pt-16 pb-10 px-5 sm:px-10 lg:px-20" style={{ background: '#24120B', color: '#CBB89D' }}>
+      <div className="max-w-[1280px] mx-auto">
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_0.8fr_1.3fr] gap-8 sm:gap-10 pb-8 sm:pb-10 border-b"
+          style={{ borderColor: 'rgba(212,175,55,0.18)' }}
+        >
+          {/* Brand */}
+          <div className="flex flex-col gap-[18px]">
+            <Link href="/" className="relative w-14 h-14 block self-start cursor-pointer">
               <Image
-                src="/assets/logos/df-logo.webp"
-                alt="Sunfeast Dark Fantasy Logo"
+                src="/assets/logos/Logo-sunfeast.webp"
+                alt="Sunfeast Beverages"
                 fill
-                className="object-contain object-left filter brightness-[2.3] contrast-[1.1] drop-shadow-[0_1px_8px_rgba(212,175,55,0.4)]"
-                loading="eager"
+                className="object-contain object-left"
                 unoptimized
               />
             </Link>
-            <p className="text-xs sm:text-sm leading-relaxed max-w-xs" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-[15px] leading-relaxed max-w-[320px]" style={{ color: '#CBB89D' }}>
               A flagship brand of ITC Foods. Crafting moments of pure, unadulterated indulgence with authentic cocoa, real fruits, and dairy excellence.
             </p>
-            {/* Social icons */}
-            <div className="flex items-center gap-3 pt-2">
-              {SOCIALS.map((s) => (
+          </div>
+
+          {/* Explore */}
+          <div>
+            <h3 className="mb-[18px] text-xs font-semibold tracking-[0.2em] uppercase" style={{ color: '#D4AF37' }}>
+              Explore
+            </h3>
+            <div className="flex flex-col gap-3 text-[15px]">
+              {EXPLORE_LINKS.map((l) => (
+                <Link key={l.label} href={l.href} className="hover:text-[#F7D78D] transition-colors cursor-pointer" style={{ color: '#CBB89D' }}>
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Follow */}
+          <div>
+            <h3 className="mb-[18px] text-xs font-semibold tracking-[0.2em] uppercase" style={{ color: '#D4AF37' }}>
+              Follow
+            </h3>
+            <div className="flex items-center gap-3">
+              {SOCIAL_LINKS.map((l) => (
                 <a
-                  key={s.label}
-                  href={s.href}
+                  key={l.label}
+                  href={l.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110 glass border border-[var(--border)] hover:border-[var(--border-strong)] cursor-pointer"
-                  style={{ color: 'var(--text-muted)' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--gold-light)'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                  aria-label={l.label}
+                  title={l.label}
+                  className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 transition-transform duration-300 hover:scale-110"
+                  style={l.plate ? { background: '#FFFFFF' } : undefined}
                 >
-                  {s.icon}
+                  <Image
+                    src={l.icon}
+                    alt=""
+                    fill
+                    unoptimized
+                    className={l.plate ? 'object-contain p-2' : 'object-cover'}
+                  />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Quick links */}
+          {/* Contact */}
           <div>
-            <h3
-              className="text-xs font-bold uppercase tracking-widest mb-5"
-              style={{ color: 'var(--gold)' }}
-            >
-              Explore
-            </h3>
-            <ul className="space-y-3">
-              {QUICK_LINKS.map((l) => (
-                <li key={l.label}>
-                  <Link
-                    href={l.href}
-                    className="text-xs sm:text-sm transition-colors cursor-pointer"
-                    style={{ color: 'var(--text-secondary)' }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--gold-light)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
-                  >
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact Us / Email Section */}
-          <div className="space-y-4">
-            <h3
-              className="text-xs font-bold uppercase tracking-widest"
-              style={{ color: 'var(--gold)' }}
-            >
+            <h3 className="mb-[18px] text-xs font-semibold tracking-[0.2em] uppercase" style={{ color: '#D4AF37' }}>
               Contact Us
             </h3>
-            <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-[15px] leading-relaxed" style={{ color: '#BBA68C' }}>
               Have questions, feedback, or business inquiries? Drop us an email anytime.
             </p>
-
-            {/* Direct Email link */}
             <a
-              href="mailto:itccares@itc.in"
-              className="inline-flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl glass border border-[var(--border)] hover:border-[var(--gold)] text-xs sm:text-sm font-semibold transition-all group hover:scale-[1.02] cursor-pointer"
-              style={{ color: 'var(--gold-light)' }}
+              href="mailto:consumer.care@itc.in"
+              className="inline-block mt-3 text-base font-medium cursor-pointer"
+              style={{ color: '#F7D78D' }}
             >
-              <Mail size={15} className="text-[var(--gold)] group-hover:scale-110 transition-transform" />
-              <span>itccares@itc.in</span>
+              consumer.care@itc.in
             </a>
-
-            {/* Quick Email Inquiry */}
-            <form onSubmit={handleEmailSubmit} className="space-y-2 pt-1">
-              <div className="relative flex items-center">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter email to reach us..."
-                  required
-                  className="w-full bg-[#140A06] border border-[var(--border)] rounded-xl py-2.5 pl-3.5 pr-20 text-xs text-[#FAF3E0] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] transition-colors"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-1.5 px-3 py-1.5 rounded-lg btn-gold text-[11px] font-bold tracking-wider cursor-pointer shadow-sm hover:scale-105 active:scale-95 transition-all"
-                >
-                  Send
-                </button>
-              </div>
-              {submitted && (
-                <p className="text-[11px] font-semibold text-green-400 flex items-center gap-1.5">
-                  <Check size={12} />
-                  <span>Thank you! We&apos;ll be in touch with you shortly.</span>
-                </p>
-              )}
+            <form onSubmit={handleEmailSubmit} className="flex mt-[18px] border-b" style={{ borderColor: 'rgba(212,175,55,0.4)' }}>
+              <input
+                type="email"
+                aria-label="Your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter email to reach us"
+                required
+                className="flex-1 min-w-0 h-12 bg-transparent border-0 outline-none text-[15px]"
+                style={{ color: '#FAF3E0' }}
+              />
+              <button
+                type="submit"
+                className="h-12 pl-4 text-[13px] font-semibold tracking-[0.14em] uppercase cursor-pointer"
+                style={{ color: '#F7D78D' }}
+              >
+                Send →
+              </button>
             </form>
+            {submitted && (
+              <p className="mt-2 text-xs font-semibold text-green-400">
+                Thank you! We&apos;ll be in touch with you shortly.
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Bottom copyright bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-          <p>© {new Date().getFullYear()} ITC Limited. All rights reserved.</p>
-          <p>Sunfeast & Dark Fantasy are registered trademarks of ITC Limited.</p>
+        <div className="flex flex-col lg:flex-row justify-between gap-2.5 pt-7 text-[13px]" style={{ color: '#BBA68C' }}>
+          <p className="m-0">© {new Date().getFullYear()} ITC Limited. All rights reserved.</p>
+          <p className="m-0">Sunfeast &amp; Dark Fantasy are registered trademarks of ITC Limited.</p>
         </div>
       </div>
     </footer>

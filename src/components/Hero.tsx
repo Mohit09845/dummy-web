@@ -1,166 +1,84 @@
-'use client';
-
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+// Static banner: a single image, no carousel, no client JS. See AGENTS.md
+// if reviving a multi-slide version — home-slider-two/three.webp are the
+// other two creatives previously used here.
 import Image from 'next/image';
 import Link from 'next/link';
 
+const IMAGE = {
+  src: '/assets/kvs/hero-range.webp',
+  alt: 'Sunfeast Breakfast Smoothie styled with oats, almonds and banana',
+  posMobile: '30% center',
+  posDesktop: 'center 62%',
+};
+
+const COPY = {
+  eyebrow: 'Dark Fantasy · Sunfeast · Aashirvaad',
+  a: 'Where every ',
+  em: 'sip',
+  b: ' becomes an indulgence.',
+  sub: 'Rich Belgian chocolate shakes, luscious fruit smoothies, and slow-crafted flavoured milks created for decadent everyday refreshment.',
+};
+
+const PRIMARY_CTA = { label: 'Explore Products', href: '/products' };
+const SECONDARY_CTA = { label: 'Find your drink', href: '#quiz' };
+
 export default function Hero() {
-  const bgRef = useRef<HTMLDivElement>(null);
-  const [heroSrc, setHeroSrc] = useState<string>('/assets/kvs/sunfeast-bf-smoothie-hero.webp');
-  const [imgError, setImgError] = useState<boolean>(false);
-
-  // Subtle parallax on scroll
-  useEffect(() => {
-    const onScroll = () => {
-      if (bgRef.current) {
-        bgRef.current.style.transform = `translateY(${window.scrollY * 0.25}px)`;
-      }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const scrollToProducts = () => {
-    document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleImageError = () => {
-    if (heroSrc === '/assets/kvs/sunfeast-bf-smoothie-hero.webp') {
-      setHeroSrc('/assets/kvs/Sunfeast BF Smoothie A+ Content-01.webp');
-    } else if (heroSrc === '/assets/kvs/Sunfeast BF Smoothie A+ Content-01.webp') {
-      setHeroSrc('/assets/kvs/Picture1.webp');
-    } else {
-      setImgError(true);
-    }
-  };
-
-  const stagger = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.16 } },
-  };
-
-  const fadeUp = {
-    hidden: { opacity: 0, y: 35 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
-    },
-  };
-
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-[#090503]">
-      {/* ── Parallax Background ───────────────────────── */}
-      <div
-        ref={bgRef}
-        className="hero-parallax absolute inset-0 z-0 pointer-events-none"
-        style={{ top: '-5%', height: '110%' }}
-      >
-        {!imgError ? (
-          <Image
-            key={heroSrc}
-            src={heroSrc}
-            alt="Sunfeast Dark Fantasy Beverages Hero"
-            fill
-            priority
-            unoptimized
-            sizes="100vw"
-            onError={handleImageError}
-            className="object-cover object-center"
-          />
-        ) : (
-          /* Fallback gradient placeholder if image fails to load */
-          <div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              background:
-                'radial-gradient(ellipse at 50% 35%, rgba(212, 175, 55, 0.25) 0%, rgba(35, 16, 9, 0.95) 55%, #090503 100%)',
-            }}
-          />
-        )}
-
-        {/* Darker overlay for rich text contrast */}
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#090503] via-[#090503]/55 to-black/60" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#090503]/70 via-transparent to-[#090503]/70" />
-      </div>
-
-      {/* ── Hero Content (Compact single-view layout) ── */}
-      <div className="relative z-10 text-center px-5 sm:px-8 max-w-4xl mx-auto pt-20 sm:pt-24 pb-12 flex flex-col items-center justify-center">
-        {/* Main headline, staggered with drop shadow */}
-        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-1 sm:space-y-1.5 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
-          <motion.h1
-            variants={fadeUp}
-            className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight text-[#FAF3E0]"
-          >
-            Where Every
-          </motion.h1>
-          <motion.h1
-            variants={fadeUp}
-            className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black italic leading-[0.95] tracking-tight text-gold-gradient drop-shadow-[0_2px_16px_rgba(212,175,55,0.4)]"
-          >
-            Sip
-          </motion.h1>
-          <motion.h1
-            variants={fadeUp}
-            className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight text-[#FAF3E0]"
-          >
-            Becomes an Indulgence.
-          </motion.h1>
-        </motion.div>
-
-        {/* Sub-headline */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.65, duration: 0.6, ease: 'easeOut' }}
-          className="mt-4 sm:mt-5 text-xs sm:text-sm md:text-base max-w-lg mx-auto leading-relaxed text-[#FAF3E0]/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] font-medium"
-        >
-          Rich Belgian chocolate shakes, luscious fruit smoothies, and slow-crafted
-          flavoured milks created for decadent everyday refreshment.
-        </motion.p>
-
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.85, duration: 0.5, ease: 'easeOut' }}
-          className="mt-6 sm:mt-7 flex flex-wrap items-center justify-center gap-3.5"
-        >
-          <Link
-            href="/products"
-            className="btn-gold px-7 py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase shadow-2xl cursor-pointer inline-flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all"
-          >
-            <span>Explore Products</span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
-            className="btn-secondary px-6 py-3 rounded-full text-xs sm:text-sm font-semibold tracking-wider uppercase glass cursor-pointer"
-          >
-            Read FAQs
-          </button>
-        </motion.div>
-      </div>
-
-      {/* ── Scroll Indicator ─────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 0.6 }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 cursor-pointer z-10"
-        onClick={scrollToProducts}
-        role="button"
-        tabIndex={0}
-        aria-label="Scroll down to products"
-      >
-        <ChevronDown
-          size={20}
-          className="bounce-down text-[var(--gold)]"
+    <section className="relative w-full bg-[#090503] pt-16 sm:pt-[76px] lg:pt-[84px]" aria-label="Featured">
+      {/* Sized off the viewport itself (not an aspect-ratio) so the image
+          always reaches the bottom of the frame with no gap before the
+          next section, at any window width/height combination. */}
+      <div className="relative w-full h-[86svh] min-h-[600px] max-h-[820px] lg:h-[calc(100svh-84px)] lg:min-h-[640px] lg:max-h-[880px] overflow-hidden">
+        <Image
+          src={IMAGE.src}
+          alt={IMAGE.alt}
+          fill
+          priority
+          unoptimized
+          sizes="100vw"
+          className="object-cover [object-position:var(--pos-m)] lg:[object-position:var(--pos-d)]"
+          style={{ '--pos-m': IMAGE.posMobile, '--pos-d': IMAGE.posDesktop } as React.CSSProperties}
         />
-      </motion.div>
+
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(9,5,3,0.42) 0%, rgba(9,5,3,0) 100%), linear-gradient(180deg, rgba(9,5,3,0.38) 0%, rgba(9,5,3,0.26) 45%, rgba(9,5,3,0.6) 100%)',
+          }}
+        />
+
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-5 sm:px-10">
+          <div className="hero-rise max-w-[900px] flex flex-col items-center [text-shadow:0_2px_24px_rgba(0,0,0,0.55)]">
+            <p className="mb-4 sm:mb-5 text-[12px] sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-[#F7D78D]">
+              {COPY.eyebrow}
+            </p>
+            <h1 className="text-[42px] leading-[1.02] sm:text-[60px] lg:text-[64px] xl:text-[76px] font-medium tracking-[-0.025em] text-[#FAF3E0] text-balance">
+              {COPY.a}
+              <em className="italic font-normal text-[#F7D78D]">{COPY.em}</em>
+              {COPY.b}
+            </h1>
+            <p className="mt-5 max-w-[560px] text-base sm:text-lg leading-relaxed text-[#F2E8D5]">
+              {COPY.sub}
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 mt-8 w-full sm:w-auto [text-shadow:none]">
+              <Link
+                href={PRIMARY_CTA.href}
+                className="btn-gold w-full sm:w-auto flex items-center justify-center gap-2.5 h-[52px] px-7 rounded-full text-sm font-bold tracking-[0.08em] uppercase"
+              >
+                {PRIMARY_CTA.label} →
+              </Link>
+              <a
+                href={SECONDARY_CTA.href}
+                className="w-full sm:w-auto flex items-center justify-center h-[52px] px-7 rounded-full border border-[rgba(250,243,224,0.55)] bg-[rgba(9,5,3,0.25)] backdrop-blur-sm text-sm font-bold tracking-[0.08em] uppercase text-[#FAF3E0] hover:border-[#F7D78D] hover:text-[#F7D78D] transition-colors"
+              >
+                {SECONDARY_CTA.label}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

@@ -1,88 +1,65 @@
-import type { Metadata } from 'next';
-import { Ubuntu } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
+import { Jost } from 'next/font/google';
 import './globals.css';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
+import { organizationSchema, websiteSchema } from '@/lib/schema';
+import JsonLd from '@/components/JsonLd';
 
-const ubuntu = Ubuntu({
+// Jost is a variable font, so one file covers every weight. Upright is
+// preloaded (used everywhere); italic is only for accent words, so it is
+// not preloaded and stays off the critical path.
+const jost = Jost({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-ubuntu',
+  style: 'normal',
+  variable: '--font-jost',
   display: 'swap',
 });
+const jostItalic = Jost({
+  subsets: ['latin'],
+  style: 'italic',
+  variable: '--font-jost-italic',
+  display: 'swap',
+  preload: false,
+});
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#24120B',
+};
+
+const DEFAULT_DESCRIPTION =
+  'Dark Fantasy Belgian chocolate milkshakes, Sunfeast real-fruit smoothies, and Aashirvaad badam milk and lassi, with no chemical preservatives.';
+
+// Pages set `title` (short) and their own `alternates.canonical`; nothing
+// page-specific belongs here because every route inherits it.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'Sunfeast Dark Fantasy Beverages | Where Every Sip Becomes an Indulgence',
-  description:
-    'Indulge in the luxurious range of Dark Fantasy milkshakes, Sunfeast smoothies, Aashirvaad badam milk, and lassi, crafted with authentic Belgian cocoa, pure dairy, and real fruits.',
-  keywords: [
-    'Sunfeast Dark Fantasy',
-    'Dark Fantasy Beverages',
-    'Belgian Chocolate Milkshake',
-    'Vanilla Milkshake',
-    'Mango Smoothie',
-    'ITC Foods',
-  ],
-  alternates: {
-    canonical: '/',
+  title: {
+    default: `${SITE_NAME} | Where Every Sip Becomes an Indulgence`,
+    template: `%s | ${SITE_NAME}`,
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  description: DEFAULT_DESCRIPTION,
+  applicationName: SITE_NAME,
+  robots: { index: true, follow: true },
   openGraph: {
-    title: 'Sunfeast Dark Fantasy Beverages',
-    description: 'Where Every Sip Becomes an Indulgence: Belgian Chocolate Milkshakes & Fruit Smoothies',
-    url: SITE_URL,
     siteName: SITE_NAME,
     type: 'website',
     locale: 'en_IN',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: SITE_NAME }],
+    images: [{ url: '/assets/kvs/og-image.jpg', width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Sunfeast Dark Fantasy Beverages',
-    description: 'Where Every Sip Becomes an Indulgence: Belgian Chocolate Milkshakes & Fruit Smoothies',
-    images: ['/og-image.jpg'],
+    images: ['/assets/kvs/og-image.jpg'],
   },
+  formatDetection: { telephone: false, email: false, address: false },
 };
 
-const organizationJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: SITE_NAME,
-  url: SITE_URL,
-  logo: `${SITE_URL}/assets/logos/df-logo.webp`,
-  brand: ['Sunfeast', 'Dark Fantasy', 'Aashirvaad'],
-};
-
-const websiteJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: SITE_NAME,
-  url: SITE_URL,
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={ubuntu.variable}>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
-        />
-      </head>
+    <html lang="en-IN" className={`${jost.variable} ${jostItalic.variable}`}>
       <body className="min-h-screen antialiased bg-[#090503] text-[#FAF3E0] selection:bg-[#D4AF37] selection:text-[#090503]">
+        <JsonLd data={[organizationSchema(), websiteSchema()]} />
         {children}
       </body>
     </html>

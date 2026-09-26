@@ -24,10 +24,7 @@ export interface Product {
   description: string;
   longDescription: string;
   volume: string;
-  accentColor: string;       // card glow / accent
-  accentLight: string;       // lighter shade for text
-  bgGradient: string;        // product page hero gradient
-  packshot: string;          // /assets/packshots/...
+  accentColor: string;       // card glow / accent  packshot: string;          // /assets/packshots/...
   backshotImage: string;     // back-of-pack
   ingredients: string[];
   nutrition: NutritionItem[];
@@ -52,10 +49,7 @@ export const PRODUCTS: Product[] = [
     longDescription:
       'Indulge in the deep, velvety richness of Dark Fantasy Milkshake. Choose the Belgian Chocolate flavour, crafted with authentic imported Belgian cocoa solids, or the White Chocolate Vanilla flavour, pairing creamy vanilla bean essence with rich white chocolate. Both made with 85%+ standardised dairy milk, flash UHT processed, with zero chemical preservatives. Ready to savour.',
     volume: '160 ml',
-    accentColor: '#C8842A',
-    accentLight: '#F5C87D',
-    bgGradient: 'from-[#1A0A03] via-[#3D1A06] to-[#1A0A03]',
-    packshot: '/assets/packshots/chocolate-milkshake/fop.webp',
+    accentColor: '#C8842A',    packshot: '/assets/packshots/chocolate-milkshake/fop.webp',
     backshotImage: '/assets/packshots/chocolate-milkshake/bop1.webp',
     ingredients: [
       'Standardised Milk (85%)',
@@ -119,10 +113,7 @@ export const PRODUCTS: Product[] = [
     longDescription:
       'Capture the taste of peak Indian summer, all year round. Sunfeast Smoothie packs real fruit pieces into a thick, creamy dairy blend: sun-ripened Ratnagiri Alphonso mango, a tangy berry-mango mix, or a wholesome Breakfast Smoothie with oats, dates, and chia seeds. No concentrates. No artificial colours. Just real fruit, sip after sip.',
     volume: '160 ml',
-    accentColor: '#D97706',
-    accentLight: '#FCD34D',
-    bgGradient: 'from-[#100800] via-[#3B1F00] to-[#100800]',
-    packshot: '/assets/packshots/mango-smoothie/render.webp',
+    accentColor: '#D97706',    packshot: '/assets/packshots/mango-smoothie/render.webp',
     backshotImage: '/assets/packshots/mango-smoothie/bop.webp',
     ingredients: [
       'Standardised Milk (65%)',
@@ -194,10 +185,7 @@ export const PRODUCTS: Product[] = [
     longDescription:
       'Inspired by royal Indian kitchens, Aashirvaad Shahi Badam Milk blends wholesome dairy with real California almond slivers, warming cardamom, and a hint of precious saffron. Each sip is a nourishing ritual with 5.2g of natural protein, rich calcium, and a flavour profile worthy of royalty.',
     volume: '160 ml',
-    accentColor: '#B45309',
-    accentLight: '#FDE68A',
-    bgGradient: 'from-[#0D0800] via-[#2C1800] to-[#0D0800]',
-    packshot: '/assets/packshots/badam-milk/fop.webp',
+    accentColor: '#B45309',    packshot: '/assets/packshots/badam-milk/fop.webp',
     backshotImage: '/assets/packshots/badam-milk/bop.webp',
     ingredients: [
       'Standardised Milk (88%)',
@@ -241,10 +229,7 @@ export const PRODUCTS: Product[] = [
     longDescription:
       'Aashirvaad Svasti Lassi brings the soul of homestyle Indian lassi into a beautifully packaged, fresh experience. Crafted from full-fat curd with live probiotic cultures, it delivers authentic tang, rich creaminess, and natural gut-health benefits. Available in classic plain and a hint of rose.',
     volume: '200 ml',
-    accentColor: '#7C3AED',
-    accentLight: '#C4B5FD',
-    bgGradient: 'from-[#07030E] via-[#170929] to-[#07030E]',
-    packshot: '/assets/packshots/lassi/fop.webp',
+    accentColor: '#7C3AED',    packshot: '/assets/packshots/lassi/fop.webp',
     backshotImage: '/assets/packshots/lassi/bop.webp',
     ingredients: [
       'Full-fat Curd (95%)',

@@ -1,37 +1,31 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────────────────
-   DESIGN TOKENS: PURE DARK FANTASY LUXURY THEME
+   DESIGN TOKENS
+   Dark shell (header, hero, explore range, footer) + light
+   cream content sections. Components use the *-light tokens.
    ───────────────────────────────────────────────────────── */
 :root {
-  --bg:             #090503;
-  --bg-card:        #140A06;
-  --bg-card-hover:  #1D0F09;
-  --bg-section:     #0F0805;
-  --bg-accent:      #24120B;
+  --bg:           #090503;
+  --text-primary: #FAF3E0;
+  --gold:         #D4AF37;
+  --gold-light:   #F7D78D;
+  --gold-dark:    #9E7623;
 
-  --text-primary:   #FAF3E0;
-  --text-secondary: #CBB89D;
-  --text-muted:     #A08A73;
-
-  --gold:           #D4AF37;
-  --gold-light:     #F7D78D;
-  --gold-dark:      #9E7623;
-  --gold-glow:      rgba(212, 175, 55, 0.28);
-
-  --border:         rgba(212, 175, 55, 0.18);
-  --border-strong:  rgba(212, 175, 55, 0.38);
+  --bg-light:               #FAF3E0;
+  --surface-light:          #F2E8D5;
+  --text-on-light:          #1D0F09;
+  --text-on-light-muted:    #5C4636;
+  --accent-on-light:        #7A5716;
+  --border-on-light:        rgba(29, 15, 9, 0.14);
+  --border-on-light-strong: rgba(29, 15, 9, 0.25);
 
   color-scheme: dark;
 }
 
 /* ─────────────────────────────────────────────────────────
-   BASE & RESET
+   BASE
    ───────────────────────────────────────────────────────── */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
 html {
   scroll-behavior: smooth;
   background-color: var(--bg);
@@ -40,171 +34,50 @@ html {
 body {
   background-color: var(--bg);
   color: var(--text-primary);
-  font-family: var(--font-ubuntu), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-jost), 'Jost', 'Trebuchet MS', sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─────────────────────────────────────────────────────────
-   GLOBAL INTERACTIVE CURSORS
-   ───────────────────────────────────────────────────────── */
+/* Italic lives in its own (non-preloaded) font file; see app/layout.tsx */
+em,
+i,
+.italic {
+  font-family: var(--font-jost-italic), var(--font-jost), 'Jost', 'Trebuchet MS', sans-serif;
+}
+
 button,
 a,
 [role="button"],
-input[type="button"],
 input[type="submit"],
-input[type="reset"],
 select,
 summary,
 label[for] {
   cursor: pointer;
 }
 
-/* ─────────────────────────────────────────────────────────
-   TYPOGRAPHY
-   ───────────────────────────────────────────────────────── */
-.font-display {
-  font-family: var(--font-ubuntu), system-ui, -apple-system, sans-serif;
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
-/* ─────────────────────────────────────────────────────────
-   SCROLLBAR
-   ───────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, var(--gold-dark), var(--gold));
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gold-light);
-}
+::-webkit-scrollbar-thumb:hover { background: var(--gold-light); }
 
-/* ─────────────────────────────────────────────────────────
-   HORIZONTAL SCROLL RAIL
-   ───────────────────────────────────────────────────────── */
+/* Horizontal card rails: scrollable without a visible scrollbar */
 .scroll-rail {
   overflow-x: auto;
-  overflow-y: visible;
   scrollbar-width: none;
-  -ms-overflow-style: none;
 }
-.scroll-rail::-webkit-scrollbar {
-  display: none;
-}
-
-/* ─────────────────────────────────────────────────────────
-   LUXURY GOLD GRADIENTS
-   ───────────────────────────────────────────────────────── */
-.text-gold-gradient {
-  background: linear-gradient(135deg, #FFF1C5 0%, #F5CE7A 35%, #D4AF37 65%, #ECC368 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gold-subtle {
-  background: linear-gradient(135deg, #E6C885 0%, #BF9B30 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ─────────────────────────────────────────────────────────
-   GLASS SURFACES
-   ───────────────────────────────────────────────────────── */
-.glass {
-  background: rgba(20, 10, 6, 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
-}
-
-.glass-pill {
-  background: rgba(212, 175, 55, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-}
-
-/* ─────────────────────────────────────────────────────────
-   PRODUCT CARD HOVER GLOW
-   ───────────────────────────────────────────────────────── */
-.card-glow {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.4s ease,
-              border-color 0.4s ease,
-              background-color 0.4s ease;
-}
-.card-glow:hover {
-  transform: translateY(-8px);
-  border-color: var(--border-strong);
-  background-color: var(--bg-card-hover);
-}
-
-/* ─────────────────────────────────────────────────────────
-   PACKSHOT HOVER
-   ───────────────────────────────────────────────────────── */
-.packshot-zoom {
-  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
-}
-.packshot-zoom:hover {
-  transform: scale(1.06) translateY(-6px);
-  filter: drop-shadow(0 25px 30px rgba(0, 0, 0, 0.6));
-}
-
-/* ─────────────────────────────────────────────────────────
-   HERO PARALLAX
-   ───────────────────────────────────────────────────────── */
-.hero-parallax {
-  will-change: transform;
-}
-
-/* ─────────────────────────────────────────────────────────
-   ANIMATED CHEVRON
-   ───────────────────────────────────────────────────────── */
-@keyframes bounce-down {
-  0%, 100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(8px);
-    opacity: 0.45;
-  }
-}
-.bounce-down {
-  animation: bounce-down 2s ease-in-out infinite;
-}
-
-/* ─────────────────────────────────────────────────────────
-   FADE-UP ANIMATION
-   ───────────────────────────────────────────────────────── */
-.fade-up {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.fade-up.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ─────────────────────────────────────────────────────────
-   MODAL BACKDROP
-   ───────────────────────────────────────────────────────── */
-.modal-backdrop {
-  background: rgba(4, 2, 1, 0.82);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
+.scroll-rail::-webkit-scrollbar { display: none; }
+.snap-start { scroll-snap-align: start; }
 
 /* ─────────────────────────────────────────────────────────
    BUTTONS
@@ -215,51 +88,131 @@ label[for] {
   color: #120701;
   font-weight: 700;
   letter-spacing: 0.05em;
-  transition: background-position 0.45s ease,
-              transform 0.25s ease,
-              box-shadow 0.35s ease;
-  cursor: pointer;
+  transition: background-position 0.45s ease, transform 0.25s ease, box-shadow 0.35s ease;
 }
 .btn-gold:hover {
   background-position: right center;
   transform: translateY(-2px);
   box-shadow: 0 10px 28px rgba(212, 175, 55, 0.45);
 }
-.btn-gold:active {
-  transform: translateY(0);
+.btn-gold:active { transform: translateY(0); }
+
+/* Solid dark pill, used on light/cream sections */
+.btn-dark {
+  background: var(--text-on-light);
+  color: var(--bg-light);
+  transition: background-color 0.3s ease, transform 0.25s ease;
+}
+.btn-dark:hover {
+  background: #3D2A1C;
+  transform: translateY(-2px);
 }
 
-.btn-secondary {
-  background: rgba(212, 175, 55, 0.08);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  transition: all 0.3s ease;
-  cursor: pointer;
+/* Outline pill for light/cream sections */
+.btn-outline-dark {
+  background: transparent;
+  border: 1px solid var(--border-on-light-strong);
+  color: var(--text-on-light);
+  transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.25s ease;
 }
-.btn-secondary:hover {
-  background: rgba(212, 175, 55, 0.16);
-  border-color: var(--border-strong);
-  color: var(--gold-light);
+.btn-outline-dark:hover {
+  border-color: var(--text-on-light);
+  background: rgba(29, 15, 9, 0.04);
   transform: translateY(-2px);
 }
 
 /* ─────────────────────────────────────────────────────────
-   SNAP SCROLL
+   STAGGERED CARD ROW
+   Every even card sits lower. margin-top (not transform) so the
+   row grows to include the offset and a scrolling parent never
+   clips it.
    ───────────────────────────────────────────────────────── */
-.snap-x-mandatory {
-  scroll-snap-type: x mandatory;
+.stagger-row > :nth-child(even) { margin-top: 32px; }
+@media (min-width: 640px) {
+  .stagger-row > :nth-child(even) { margin-top: 44px; }
 }
-.snap-start {
-  scroll-snap-align: start;
-}
-.snap-center {
-  scroll-snap-align: center;
+@media (min-width: 1024px) {
+  .stagger-row > :nth-child(even) { margin-top: 60px; }
 }
 
 /* ─────────────────────────────────────────────────────────
-   USP STRIP DIVIDER
+   MOTION
+   All animation is CSS (no animation library). Everything is
+   neutralised under prefers-reduced-motion at the bottom.
    ───────────────────────────────────────────────────────── */
-.usp-divider {
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, var(--border), transparent);
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes swap-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(28px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes pop-out {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(20px) scale(0.98); }
+}
+
+/* Staggered text entrance (hero slides, page intros); re-keyed to replay */
+.hero-rise > * { animation: rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero-rise > :nth-child(2) { animation-delay: 0.08s; }
+.hero-rise > :nth-child(3) { animation-delay: 0.16s; }
+.hero-rise > :nth-child(4) { animation-delay: 0.24s; }
+
+/* Re-keyed on tab/category change, drawer open, modal tiles */
+.panel-in { animation: panel-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+/* Drink Finder question change */
+.quiz-step { animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+/* Product gallery image swap (only after user interaction, never first paint) */
+.image-swap { animation: swap-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+/* Occasion banner image cross-fade */
+.modal-fade { animation: fade-in 0.35s ease-out both; }
+
+/* Scroll reveal (components/Reveal.tsx). Only elements that start
+   below the fold get .reveal-pending, so above-the-fold content
+   never flashes and never depends on JS. */
+.reveal-pending {
+  opacity: 0;
+  transform: translateY(28px);
+}
+.reveal-pending.reveal-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* Buy-now modal (components/BuyNowModal.tsx) */
+.modal-backdrop {
+  background: rgba(9, 5, 3, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.modal-backdrop[data-state="open"]   { animation: fade-in 0.25s ease-out both; }
+.modal-backdrop[data-state="closed"] { animation: fade-out 0.22s ease-in both; }
+.modal-panel[data-state="open"]   { animation: pop-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.modal-panel[data-state="closed"] { animation: pop-out 0.22s ease-in both; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal-pending { opacity: 1; transform: none; }
 }

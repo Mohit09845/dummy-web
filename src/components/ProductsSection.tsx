@@ -1,53 +1,108 @@
 'use client';
 
-import { useLayoutEffect, useState, useRef, useCallback, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { PRODUCTS } from '@/data/products';
-import ProductCard from './ProductCard';
+import ProductCard, { ProductCardData } from './ProductCard';
+import Reveal from './Reveal';
+
+const CARDS: ProductCardData[] = [
+  {
+    tag: 'Dark Fantasy',
+    title: 'Imported Belgian cocoa',
+    text: 'Belgian cocoa solids give Dark Fantasy Milkshake its deep, velvety richness.',
+    product: 'Belgian Chocolate Milkshake',
+    vol: PRODUCTS[0].volume,
+    img: PRODUCTS[0].variants[0].image,
+    bg: `color-mix(in srgb, ${PRODUCTS[0].accentColor} 20%, #F2E8D5)`,
+    href: `/product/${PRODUCTS[0].id}?variant=${PRODUCTS[0].variants[0].id}`,
+  },
+  {
+    tag: 'Sunfeast',
+    title: 'Ratnagiri Alphonso',
+    text: '25% real Alphonso mango pieces in a thick, creamy smoothie.',
+    product: 'Alphonso Mango Smoothie',
+    vol: PRODUCTS[1].volume,
+    img: PRODUCTS[1].variants[0].image,
+    bg: `color-mix(in srgb, ${PRODUCTS[1].variants[0].color} 20%, #F2E8D5)`,
+    href: `/product/${PRODUCTS[1].id}?variant=${PRODUCTS[1].variants[0].id}`,
+  },
+  {
+    tag: 'Aashirvaad',
+    title: 'Almonds & saffron',
+    text: 'California almond slivers, cardamom and a hint of saffron in Shahi Badam Milk.',
+    product: 'Shahi Badam Milk',
+    vol: PRODUCTS[2].volume,
+    img: PRODUCTS[2].packshot,
+    bg: `color-mix(in srgb, ${PRODUCTS[2].accentColor} 20%, #F2E8D5)`,
+    href: `/product/${PRODUCTS[2].id}`,
+  },
+  {
+    tag: 'Aashirvaad',
+    title: 'Live probiotic cultures',
+    text: 'Svasti Lassi is cultured from fresh full-fat curd for homestyle tang.',
+    product: 'Svasti Lassi',
+    vol: PRODUCTS[3].volume,
+    img: PRODUCTS[3].packshot,
+    bg: `color-mix(in srgb, ${PRODUCTS[3].accentColor} 20%, #F2E8D5)`,
+    href: `/product/${PRODUCTS[3].id}`,
+  },
+  {
+    tag: 'Dark Fantasy',
+    title: 'White chocolate & vanilla',
+    text: 'Creamy vanilla bean essence paired with rich white chocolate.',
+    product: 'White Chocolate Vanilla Milkshake',
+    vol: PRODUCTS[0].volume,
+    img: PRODUCTS[0].variants[1].image,
+    bg: `color-mix(in srgb, ${PRODUCTS[0].variants[1].color} 20%, #F2E8D5)`,
+    href: `/product/${PRODUCTS[0].id}?variant=${PRODUCTS[0].variants[1].id}`,
+  },
+  {
+    tag: 'Sunfeast',
+    title: 'Tangy wild berries',
+    text: 'Real berries and sweet mango together provide immunity-supporting Vitamin C.',
+    product: 'Berry & Mango Smoothie',
+    vol: PRODUCTS[1].volume,
+    img: PRODUCTS[1].variants[1].image,
+    bg: `color-mix(in srgb, ${PRODUCTS[1].variants[1].color} 20%, #F2E8D5)`,
+    href: `/product/${PRODUCTS[1].id}?variant=${PRODUCTS[1].variants[1].id}`,
+  },
+  {
+    tag: 'Sunfeast',
+    title: 'Oats, dates & super seeds',
+    text: '6g of protein per serve, with no added sugar. The sweetness comes from real dates and banana.',
+    product: 'Breakfast Smoothie',
+    vol: PRODUCTS[1].volume,
+    img: PRODUCTS[1].variants[2].image,
+    bg: `color-mix(in srgb, ${PRODUCTS[1].variants[2].color} 20%, #F2E8D5)`,
+    href: `/product/${PRODUCTS[1].id}?variant=${PRODUCTS[1].variants[2].id}`,
+  },
+];
 
 export default function ProductsSection() {
   const railRef = useRef<HTMLDivElement>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [fill, setFill] = useState(12);
 
-  // Recompute which arrows make sense to show: neither if everything
-  // already fits on screen, and each side hides once scrolled to its end.
   const updateScrollState = useCallback(() => {
     const rail = railRef.current;
     if (!rail) return;
     const maxScroll = rail.scrollWidth - rail.clientWidth;
     setCanScrollLeft(rail.scrollLeft > 4);
     setCanScrollRight(rail.scrollLeft < maxScroll - 4);
+    setFill(maxScroll > 0 ? 12 + (rail.scrollLeft / maxScroll) * 88 : 100);
   }, []);
 
-  // Reset scroll position before paint so the scroll-snap rail doesn't
-  // auto-realign to a centered card when the filtered list changes.
   useLayoutEffect(() => {
-    if (railRef.current) railRef.current.scrollLeft = 0;
     updateScrollState();
-  }, [selectedCategory, updateScrollState]);
+  }, [updateScrollState]);
 
   useEffect(() => {
     updateScrollState();
     window.addEventListener('resize', updateScrollState);
     return () => window.removeEventListener('resize', updateScrollState);
   }, [updateScrollState]);
-
-  const categories = [
-    { label: 'All Beverages', value: 'all' },
-    { label: 'Dark Fantasy Shakes', value: 'Dark Fantasy' },
-    { label: 'Fruit Smoothies', value: 'Smoothies' },
-    { label: 'Dairy Classics', value: 'Dairy' },
-  ];
-
-  const filteredProducts = PRODUCTS.filter((product) => {
-    if (selectedCategory === 'all') return true;
-    if (selectedCategory === 'Dark Fantasy') return product.brand.includes('Dark Fantasy');
-    if (selectedCategory === 'Smoothies') return product.category.includes('Smoothie') || product.brand.includes('Sunfeast Breakfast');
-    if (selectedCategory === 'Dairy') return product.category.includes('Flavoured Milk') || product.category.includes('Lassi');
-    return true;
-  });
 
   const scroll = (dir: 'left' | 'right') => {
     if (!railRef.current) return;
@@ -56,111 +111,72 @@ export default function ProductsSection() {
   };
 
   return (
-    <section id="products" className="py-20 sm:py-28 overflow-hidden relative" style={{ background: 'var(--bg-section)' }}>
-      {/* Ambient glow */}
-      <div
-        className="absolute top-0 right-1/4 w-[500px] h-[500px] rounded-full pointer-events-none opacity-15"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(212, 175, 55, 0.25) 0%, transparent 70%)',
-          filter: 'blur(70px)',
-        }}
-      />
-
-      <div className="max-w-8xl mx-auto">
-        {/* ── Centered Section Header ─────────────────────────── */}
-        <div className="text-center px-5 sm:px-10 lg:px-16 max-w-3xl mx-auto mb-6">
-          <div
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-pill mb-3 text-xs font-semibold uppercase tracking-widest"
-            style={{ color: 'var(--gold-light)' }}
-          >
-            <span>Featured Products</span>
+    <section id="products" className="pt-16 sm:pt-24 lg:pt-32 overflow-hidden" style={{ background: 'var(--bg-light)' }}>
+      <div className="max-w-[1280px] mx-auto px-5 sm:px-10 lg:px-20">
+        <Reveal className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
+          <div>
+            <p className="mb-4 text-[13px] font-semibold tracking-[0.2em] uppercase" style={{ color: 'var(--accent-on-light)' }}>
+              Featured Products
+            </p>
+            <h2 className="text-[34px] sm:text-[44px] lg:text-[56px] leading-[1.02] font-medium tracking-[-0.02em]" style={{ color: 'var(--text-on-light)' }}>
+              Crafted from real ingredients
+            </h2>
+            <p className="mt-4 max-w-[640px] text-base sm:text-[17px] lg:text-lg leading-relaxed" style={{ color: 'var(--text-on-light-muted)' }}>
+              Cafe-like decadence, made with real Belgian cocoa, luscious fruit and rich dairy milk, and sealed fresh without chemical preservatives.
+            </p>
           </div>
-          <h2
-            className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            Indulgent <span className="text-gold-gradient italic">Beverages</span>
-          </h2>
-          <p
-            className="mt-2.5 text-xs sm:text-sm leading-relaxed"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            Explore ready-to-sip gourmet milkshakes, high-fruit smoothies, and authentic Indian dairy delights.
-          </p>
-        </div>
-
-        {/* ── Category Filter Pills Below Heading ──────────────── */}
-        <div className="flex items-center justify-center px-5 mb-10">
-          <div className="flex items-center gap-2 p-1.5 rounded-full glass border border-[var(--border)] overflow-x-auto max-w-full scroll-rail">
-            {categories.map((cat) => (
-              <button
-                key={cat.value}
-                type="button"
-                onClick={() => setSelectedCategory(cat.value)}
-                className={`px-4 sm:px-5 py-2 rounded-full text-xs font-semibold tracking-wide transition-all cursor-pointer whitespace-nowrap ${
-                  selectedCategory === cat.value
-                    ? 'btn-gold shadow-md'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--gold-light)]'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Product Displaying Row with Left & Right Arrow Buttons on Sides ── */}
-        <div className="relative max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 group/row">
-          {/* Left Arrow Button */}
-          {canScrollLeft && (
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              href="/products"
+              className="pb-1 border-b text-sm font-semibold tracking-[0.08em] uppercase cursor-pointer mr-2"
+              style={{ borderColor: 'var(--text-on-light)', color: 'var(--text-on-light)' }}
+            >
+              All products →
+            </Link>
             <button
               type="button"
+              aria-label="Previous products"
               onClick={() => scroll('left')}
-              aria-label="Scroll products left"
-              className="absolute left-2 sm:left-4 lg:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center glass border border-[var(--border)] hover:border-[var(--gold)] hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-[0_4px_25px_rgba(0,0,0,0.9)] backdrop-blur-md text-[var(--gold-light)] bg-[#140A06]/90"
+              disabled={!canScrollLeft}
+              className="w-[52px] h-[52px] rounded-full border flex items-center justify-center text-xl cursor-pointer transition-opacity disabled:cursor-default"
+              style={{ borderColor: 'var(--text-on-light)', background: 'var(--bg-light)', color: 'var(--text-on-light)', opacity: canScrollLeft ? 1 : 0.35 }}
             >
-              <ChevronLeft size={20} />
+              ←
             </button>
-          )}
-
-          {/* Right Arrow Button */}
-          {canScrollRight && (
             <button
               type="button"
+              aria-label="Next products"
               onClick={() => scroll('right')}
-              aria-label="Scroll products right"
-              className="absolute right-2 sm:right-4 lg:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center glass border border-[var(--border)] hover:border-[var(--gold)] hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-[0_4px_25px_rgba(0,0,0,0.9)] backdrop-blur-md text-[var(--gold-light)] bg-[#140A06]/90"
+              disabled={!canScrollRight}
+              className="w-[52px] h-[52px] rounded-full flex items-center justify-center text-xl cursor-pointer transition-opacity disabled:cursor-default"
+              style={{ background: 'var(--text-on-light)', color: 'var(--bg-light)', opacity: canScrollRight ? 1 : 0.35 }}
             >
-              <ChevronRight size={20} />
+              →
             </button>
-          )}
+          </div>
+        </Reveal>
 
-          {/* Horizontal Scroll Rail */}
-          <div
-            ref={railRef}
-            onScroll={updateScrollState}
-            className="scroll-rail flex items-stretch gap-6 px-10 sm:px-16 pb-8 overflow-x-auto"
-            style={{ overflowAnchor: 'none' }}
-          >
-            <div className="flex-shrink-0 w-0" />
-
-            {filteredProducts.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
+        <div
+          ref={railRef}
+          onScroll={updateScrollState}
+          className="overflow-x-auto scroll-rail mt-8 sm:mt-10 pb-10"
+          style={{ scrollSnapType: 'x mandatory' }}
+        >
+          <div className="flex items-start gap-5 sm:gap-6 lg:gap-7 w-max">
+            {CARDS.map((card, i) => (
+              <Reveal key={card.title} className="snap-start" delay={Math.min(i, 4) * 90}>
+                <ProductCard card={card} />
+              </Reveal>
             ))}
-
-            <div className="flex-shrink-0 w-6 sm:w-12" />
           </div>
         </div>
 
-        {/* ── Mobile swipe indicator ──────────────────── */}
-        {(canScrollLeft || canScrollRight) && (
-          <p
-            className="sm:hidden text-center text-xs mt-2 tracking-widest uppercase font-semibold"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            Swipe sideways or tap arrows to explore →
-          </p>
-        )}
+        <div className="relative h-0.5 mt-8 sm:mt-10" style={{ background: 'rgba(29,15,9,0.14)' }}>
+          <span
+            className="absolute left-0 top-0 bottom-0 transition-[width] duration-500 ease-out"
+            style={{ width: `${fill}%`, background: 'var(--text-on-light)' }}
+          />
+        </div>
       </div>
     </section>
   );

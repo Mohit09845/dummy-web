@@ -20,7 +20,8 @@ const JOBS = [
   // Hero KV (LCP element) — square source, resized to comfortably cover any
   // viewport up to 2000px while cutting an 8.3MB/4500px JPEG down drastically.
   ['public/assets/kvs/sunfeast-bf-smoothie-hero.jpg', 'public/assets/kvs/sunfeast-bf-smoothie-hero.webp', { side: 2000, quality: 76 }],
-  ['public/assets/kvs/Sunfeast BF Smoothie A+ Content-01.jpg', 'public/assets/kvs/Sunfeast BF Smoothie A+ Content-01.webp', { side: 2000, quality: 76 }],
+  // Homepage hero slide 1 (LCP). og-image.jpg itself stays JPEG for social crawlers.
+  ['public/assets/kvs/og-image.jpg', 'public/assets/kvs/hero-range.webp', { side: 1200, quality: 80 }],
   ['public/assets/kvs/Picture1.png', 'public/assets/kvs/Picture1.webp', { side: 2000, quality: 78 }],
 
   // Header/footer logo — displayed at ~176x88 (2x = 352x176).
