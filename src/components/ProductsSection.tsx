@@ -162,7 +162,7 @@ export default function ProductsSection() {
           className="overflow-x-auto scroll-rail mt-8 sm:mt-10 pb-10"
           style={{ scrollSnapType: 'x mandatory' }}
         >
-          <div className="flex items-start gap-5 sm:gap-6 lg:gap-7 w-max">
+          <div className="flex items-stretch gap-5 sm:gap-6 lg:gap-7 w-max">
             {CARDS.map((card, i) => (
               <Reveal key={card.title} className="snap-start" delay={Math.min(i, 4) * 90}>
                 <ProductCard card={card} />

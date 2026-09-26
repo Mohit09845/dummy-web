@@ -11,6 +11,7 @@ const CARDS: FloatingCardData[] = PRODUCT_FACTS.map((fact) => ({
   title: fact.title,
   text: fact.text,
   href: fact.href,
+  bg: fact.bg,
   link: `Explore ${fact.tag}`,
 }));
 
